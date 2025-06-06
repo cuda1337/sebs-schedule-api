@@ -1,0 +1,3 @@
+@echo off
+echo Starting Staff Schedule API...
+npx ts-node src/server.ts

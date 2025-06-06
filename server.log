@@ -1,0 +1,2292 @@
+✅ Database connected successfully
+🚀 Server running on port 3001
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'c6cc037b-ace7-424e-98f2-7f1e8b04d87b',
+      'client-request-id': 'c6cc037b-ace7-424e-98f2-7f1e8b04d87b',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"005","RoleInstance":"SJ1PEPF00000A94"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 00:22:16 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1500'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1748996536326',
+      replyToId: '1748996536326',
+      etag: '1748996536326',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T00:22:16.326Z',
+      lastModifiedDateTime: '2025-06-04T00:22:16.326Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1748996536326?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'Cameron White 2 canceled June 5tht',
+  sender: 'Chad Szala',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "c6cc037b-ace7-424e-98f2-7f1e8b04d87b",\n' +
+    '      "client-request-id": "c6cc037b-ace7-424e-98f2-7f1e8b04d87b",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"005\\",\\"RoleInstance\\":\\"SJ1PEPF00000A94\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 00:22:16 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1500"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1748996536326",\n' +
+    '      "replyToId": "1748996536326",\n' +
+    '      "etag": "1748996536326",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T00:22:16.326Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T00:22:16.326Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "7db0849d-57b8-4352-be77-8c30d5aa833e",\n' +
+    '          "displayName": "Chad Szala",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>Cameron White 2 canceled June 5tht</p>",\n' +
+    '        "plainTextContent": "Cameron White 2 canceled June 5tht"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1748996536326?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+✅ Parsed cancellation: {
+  clientName: 'Cameron White',
+  clientId: 9,
+  date: 2025-06-05T04:00:00.000Z,
+  day: 'Thursday',
+  block: 'AM',
+  originalMessage: 'Cameron White 2 canceled June 5tht'
+}
+💾 Created override: {
+  id: 26,
+  date: 2025-06-05T00:00:00.000Z,
+  type: 'cancellation',
+  day: 'Thursday',
+  block: 'AM',
+  originalStaffId: null,
+  originalClientId: 9,
+  newStaffId: null,
+  newClientId: null,
+  reason: 'Client cancellation via Teams: Cameron White 2 canceled June 5tht',
+  status: 'active',
+  createdBy: 'Chad Szala',
+  createdAt: 2025-06-04T00:22:17.503Z,
+  updatedAt: 2025-06-04T00:22:17.503Z,
+  originalClient: {
+    id: 9,
+    name: 'Cameron White',
+    locations: [ 'South Office' ],
+    authorizedHours: 20,
+    availability: {
+      'Friday-AM': true,
+      'Friday-PM': false,
+      'Monday-AM': true,
+      'Monday-PM': true,
+      'Tuesday-AM': true,
+      'Tuesday-PM': true,
+      'Thursday-AM': true,
+      'Thursday-PM': true,
+      'Wednesday-AM': false,
+      'Wednesday-PM': false
+    },
+    createdAt: 2025-06-02T10:29:03.562Z,
+    updatedAt: 2025-06-02T10:29:03.562Z
+  }
+}
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'c46957a5-b0db-47a6-a191-c3daf72a8fa8',
+      'client-request-id': 'c46957a5-b0db-47a6-a191-c3daf72a8fa8',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"000","RoleInstance":"BY1PEPF00009628"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 00:23:03 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1482'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1748996583329',
+      replyToId: '1748996583329',
+      etag: '1748996583329',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T00:23:03.329Z',
+      lastModifiedDateTime: '2025-06-04T00:23:03.329Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1748996583329?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'Parker Wilson canx 6/5 pm',
+  sender: 'Chad Szala',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "c46957a5-b0db-47a6-a191-c3daf72a8fa8",\n' +
+    '      "client-request-id": "c46957a5-b0db-47a6-a191-c3daf72a8fa8",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"000\\",\\"RoleInstance\\":\\"BY1PEPF00009628\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 00:23:03 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1482"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1748996583329",\n' +
+    '      "replyToId": "1748996583329",\n' +
+    '      "etag": "1748996583329",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T00:23:03.329Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T00:23:03.329Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "7db0849d-57b8-4352-be77-8c30d5aa833e",\n' +
+    '          "displayName": "Chad Szala",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>Parker Wilson canx 6/5 pm</p>",\n' +
+    '        "plainTextContent": "Parker Wilson canx 6/5 pm"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1748996583329?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+✅ Parsed cancellation: {
+  clientName: 'Parker Wilson',
+  clientId: 14,
+  date: 2025-06-05T04:00:00.000Z,
+  day: 'Thursday',
+  block: 'PM',
+  originalMessage: 'Parker Wilson canx 6/5 pm'
+}
+💾 Created override: {
+  id: 27,
+  date: 2025-06-05T00:00:00.000Z,
+  type: 'cancellation',
+  day: 'Thursday',
+  block: 'PM',
+  originalStaffId: null,
+  originalClientId: 14,
+  newStaffId: null,
+  newClientId: null,
+  reason: 'Client cancellation via Teams: Parker Wilson canx 6/5 pm',
+  status: 'active',
+  createdBy: 'Chad Szala',
+  createdAt: 2025-06-04T00:23:04.797Z,
+  updatedAt: 2025-06-04T00:23:04.797Z,
+  originalClient: {
+    id: 14,
+    name: 'Parker Wilson',
+    locations: [ 'North Center', 'West Side' ],
+    authorizedHours: 26,
+    availability: {
+      'Friday-AM': true,
+      'Friday-PM': false,
+      'Monday-AM': true,
+      'Monday-PM': true,
+      'Tuesday-AM': true,
+      'Tuesday-PM': true,
+      'Thursday-AM': true,
+      'Thursday-PM': true,
+      'Wednesday-AM': false,
+      'Wednesday-PM': true
+    },
+    createdAt: 2025-06-02T10:29:03.726Z,
+    updatedAt: 2025-06-02T10:29:03.726Z
+  }
+}
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': '7ce5b97e-6f4d-4028-afe5-fd209f882cce',
+      'client-request-id': '7ce5b97e-6f4d-4028-afe5-fd209f882cce',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"006","RoleInstance":"BY1PEPF0001DDDB"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 00:24:35 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1490'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1748996674966',
+      replyToId: '1748996674966',
+      etag: '1748996674966',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T00:24:34.966Z',
+      lastModifiedDateTime: '2025-06-04T00:24:34.966Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1748996674966?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'Drew Thompson canceled pm 6/6',
+  sender: 'Chad Szala',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "7ce5b97e-6f4d-4028-afe5-fd209f882cce",\n' +
+    '      "client-request-id": "7ce5b97e-6f4d-4028-afe5-fd209f882cce",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"006\\",\\"RoleInstance\\":\\"BY1PEPF0001DDDB\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 00:24:35 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1490"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1748996674966",\n' +
+    '      "replyToId": "1748996674966",\n' +
+    '      "etag": "1748996674966",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T00:24:34.966Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T00:24:34.966Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "7db0849d-57b8-4352-be77-8c30d5aa833e",\n' +
+    '          "displayName": "Chad Szala",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>Drew Thompson canceled pm 6/6</p>",\n' +
+    '        "plainTextContent": "Drew Thompson canceled pm 6/6"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1748996674966?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+✅ Parsed cancellation: {
+  clientName: 'Drew Thompson',
+  clientId: 12,
+  date: 2025-06-06T04:00:00.000Z,
+  day: 'Friday',
+  block: 'PM',
+  originalMessage: 'Drew Thompson canceled pm 6/6'
+}
+💾 Created override: {
+  id: 28,
+  date: 2025-06-06T00:00:00.000Z,
+  type: 'cancellation',
+  day: 'Friday',
+  block: 'PM',
+  originalStaffId: null,
+  originalClientId: 12,
+  newStaffId: null,
+  newClientId: null,
+  reason: 'Client cancellation via Teams: Drew Thompson canceled pm 6/6',
+  status: 'active',
+  createdBy: 'Chad Szala',
+  createdAt: 2025-06-04T00:24:36.024Z,
+  updatedAt: 2025-06-04T00:24:36.024Z,
+  originalClient: {
+    id: 12,
+    name: 'Drew Thompson',
+    locations: [ 'East Branch', 'South Office' ],
+    authorizedHours: 28,
+    availability: {
+      'Friday-AM': true,
+      'Friday-PM': true,
+      'Monday-AM': true,
+      'Monday-PM': true,
+      'Tuesday-AM': true,
+      'Tuesday-PM': true,
+      'Thursday-AM': true,
+      'Thursday-PM': false,
+      'Wednesday-AM': true,
+      'Wednesday-PM': true
+    },
+    createdAt: 2025-06-02T10:29:03.664Z,
+    updatedAt: 2025-06-02T10:29:03.664Z
+  }
+}
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': '6939ccad-d4ae-4836-bbf4-441e1117623a',
+      'client-request-id': '6939ccad-d4ae-4836-bbf4-441e1117623a',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"008","RoleInstance":"SJ1PEPF00002DB9"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 11:12:24 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1469'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749035135072',
+      replyToId: '1749035135072',
+      etag: '1749035135072',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T11:05:35.072Z',
+      lastModifiedDateTime: '2025-06-04T11:05:35.072Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749035135072?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'MeKo cancelled today',
+  sender: 'Jordan Sampson',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "6939ccad-d4ae-4836-bbf4-441e1117623a",\n' +
+    '      "client-request-id": "6939ccad-d4ae-4836-bbf4-441e1117623a",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"008\\",\\"RoleInstance\\":\\"SJ1PEPF00002DB9\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 11:12:24 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1469"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749035135072",\n' +
+    '      "replyToId": "1749035135072",\n' +
+    '      "etag": "1749035135072",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T11:05:35.072Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T11:05:35.072Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "966351cc-d417-4d5e-bb2b-1ef3af5f5006",\n' +
+    '          "displayName": "Jordan Sampson",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "text",\n' +
+    '        "content": "MeKo cancelled today",\n' +
+    '        "plainTextContent": "MeKo cancelled today"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749035135072?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ No client name found in message: MeKo cancelled today
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'dd81c2d6-6db6-4d17-8df5-3e7581d6843e',
+      'client-request-id': 'dd81c2d6-6db6-4d17-8df5-3e7581d6843e',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"007","RoleInstance":"BY3PEPF00063AF6"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 11:31:55 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1535'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749036689633',
+      replyToId: '1749036689633',
+      etag: '1749036689633',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T11:31:29.633Z',
+      lastModifiedDateTime: '2025-06-04T11:31:29.633Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749036689633?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'MaSt canx today--client on hold until further notice',
+  sender: 'Haley Lee',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "dd81c2d6-6db6-4d17-8df5-3e7581d6843e",\n' +
+    '      "client-request-id": "dd81c2d6-6db6-4d17-8df5-3e7581d6843e",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"007\\",\\"RoleInstance\\":\\"BY3PEPF00063AF6\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 11:31:55 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1535"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749036689633",\n' +
+    '      "replyToId": "1749036689633",\n' +
+    '      "etag": "1749036689633",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T11:31:29.633Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T11:31:29.633Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "6710b016-55a0-4542-866d-2c7788a5445c",\n' +
+    '          "displayName": "Haley Lee",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>MaSt canx today--client on hold until further notice</p>",\n' +
+    '        "plainTextContent": "MaSt canx today--client on hold until further notice"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749036689633?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ No client name found in message: MaSt canx today--client on hold until further notice
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'd1f44da3-39f8-4cf4-b2f6-29a4901c3d43',
+      'client-request-id': 'd1f44da3-39f8-4cf4-b2f6-29a4901c3d43',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"008","RoleInstance":"SJ1PEPF00002DCF"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'false',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 12:19:57 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1482'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749039585294',
+      replyToId: '1749039585294',
+      etag: '1749039585294',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T12:19:45.294Z',
+      lastModifiedDateTime: '2025-06-04T12:19:45.294Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749039585294?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'BeLa/JaLa 1:15 start time 6/3',
+  sender: 'RJ Garcia',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "d1f44da3-39f8-4cf4-b2f6-29a4901c3d43",\n' +
+    '      "client-request-id": "d1f44da3-39f8-4cf4-b2f6-29a4901c3d43",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"008\\",\\"RoleInstance\\":\\"SJ1PEPF00002DCF\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "false",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 12:19:57 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1482"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749039585294",\n' +
+    '      "replyToId": "1749039585294",\n' +
+    '      "etag": "1749039585294",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T12:19:45.294Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T12:19:45.294Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "1ebd1dc0-a844-4ef9-b0ec-55f466e74908",\n' +
+    '          "displayName": "RJ Garcia",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "text",\n' +
+    '        "content": "BeLa/JaLa 1:15 start time 6/3",\n' +
+    '        "plainTextContent": "BeLa/JaLa 1:15 start time 6/3"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749039585294?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'c8acf1cd-b0fa-4ca4-bc67-35e39520e203',
+      'client-request-id': 'c8acf1cd-b0fa-4ca4-bc67-35e39520e203',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"007","RoleInstance":"BY3PEPF00063AE4"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'false',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 12:41:19 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '7110'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749040879219',
+      replyToId: '1749040879219',
+      etag: '1749040879219',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T12:41:19.219Z',
+      lastModifiedDateTime: '2025-06-04T12:41:19.219Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749040879219?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: '6/4 \n' +
+    ' \n' +
+    'MaNe out pm \n' +
+    'MeKo out \n' +
+    ' \n' +
+    'Emma J out \n' +
+    ' \n' +
+    'Katlin open pm \n' +
+    'Jenna open pm  \n' +
+    'Emma G open pm \n' +
+    ' \n' +
+    'TaEc am- Jessica \n' +
+    'WyAn am- Taylor O \n' +
+    'TaFi am- Jenna \n' +
+    'AiTh am- Kylie Jo \n' +
+    'LaRh am - Katlin \n' +
+    '\n' +
+    '\n' +
+    '6/4 \n' +
+    'Sadie out \n' +
+    'Brooklyn out \n' +
+    'Kaylie out \n' +
+    ' \n' +
+    'MePo canceled \n' +
+    'HuMi out \n' +
+    'CoMi out  \n' +
+    'ElBu out pm \n' +
+    'MaWi out \n' +
+    'JaHa out \n' +
+    'ReMa out \n' +
+    ' \n' +
+    'Breanna open am \n' +
+    ' \n' +
+    'Karly open pm \n' +
+    'JoNo am- Phillip \n' +
+    'HaWo needs covered am- Matthew \n' +
+    'WiSn needs covered am- Jaucelyn \n' +
+    'YaRuCa needs covered am- Melissa \n' +
+    'WiSn needs covered pm- Phillip',
+  sender: 'Michelle Roe',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "c8acf1cd-b0fa-4ca4-bc67-35e39520e203",\n' +
+    '      "client-request-id": "c8acf1cd-b0fa-4ca4-bc67-35e39520e203",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"007\\",\\"RoleInstance\\":\\"BY3PEPF00063AE4\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "false",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 12:41:19 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "7110"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749040879219",\n' +
+    '      "replyToId": "1749040879219",\n' +
+    '      "etag": "1749040879219",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T12:41:19.219Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T12:41:19.219Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "aaf323b4-5da3-4059-8e66-09411c45f3bc",\n' +
+    '          "displayName": "Michelle Roe",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>&nbsp;</p>\\n<table itemprop=\\"copy-paste-table\\">\\n<tbody>\\n<tr>\\n<td>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">6/4&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">MaNe out pm&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">MeKo out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Emma J out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Katlin open pm&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Jenna open pm &nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Emma G open pm&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">TaEc am- Jessica&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">WyAn am- Taylor O&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">TaFi am- Jenna&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">AiTh am- Kylie Jo&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">LaRh am - Katlin&nbsp;</span></p>\\n</td>\\n<td>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">6/4&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Sadie out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Brooklyn out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Kaylie out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">MePo canceled&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">HuMi out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">CoMi out &nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">ElBu out pm&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">MaWi out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">JaHa out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">ReMa out&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Breanna open am&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">Karly open pm&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">JoNo am- Phillip&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">HaWo needs covered am- Matthew&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">WiSn needs covered am- Jaucelyn&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">YaRuCa needs covered am- Melissa&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">WiSn needs covered pm- Phillip&nbsp;</span></p>\\n<p style=\\"margin-bottom:0px; margin-left:0; margin-top:0px\\"><span style=\\"font-size:inherit\\">&nbsp;</span></p>\\n</td>\\n</tr>\\n</tbody>\\n</table>\\n<p>&nbsp;</p>",\n' +
+    '        "plainTextContent": "&nbsp;\\n\\n\\n\\n\\n6/4&nbsp;\\n&nbsp;\\nMaNe out pm&nbsp;\\nMeKo out&nbsp;\\n&nbsp;\\nEmma J out&nbsp;\\n&nbsp;\\nKatlin open pm&nbsp;\\nJenna open pm &nbsp;\\nEmma G open pm&nbsp;\\n&nbsp;\\nTaEc am- Jessica&nbsp;\\nWyAn am- Taylor O&nbsp;\\nTaFi am- Jenna&nbsp;\\nAiTh am- Kylie Jo&nbsp;\\nLaRh am - Katlin&nbsp;\\n\\n\\n6/4&nbsp;\\nSadie out&nbsp;\\nBrooklyn out&nbsp;\\nKaylie out&nbsp;\\n&nbsp;\\nMePo canceled&nbsp;\\nHuMi out&nbsp;\\nCoMi out &nbsp;\\nElBu out pm&nbsp;\\nMaWi out&nbsp;\\nJaHa out&nbsp;\\nReMa out&nbsp;\\n&nbsp;\\nBreanna open am&nbsp;\\n&nbsp;\\nKarly open pm&nbsp;\\nJoNo am- Phillip&nbsp;\\nHaWo needs covered am- Matthew&nbsp;\\nWiSn needs covered am- Jaucelyn&nbsp;\\nYaRuCa needs covered am- Melissa&nbsp;\\nWiSn needs covered pm- Phillip&nbsp;\\n&nbsp;\\n\\n\\n\\n\\n&nbsp;"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749040879219?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+✅ Parsed cancellation: {
+  clientName: 'MePo',
+  clientId: 16,
+  date: 2025-06-04T04:00:00.000Z,
+  day: 'Wednesday',
+  block: 'PM',
+  originalMessage: '6/4 \n' +
+    ' \n' +
+    'MaNe out pm \n' +
+    'MeKo out \n' +
+    ' \n' +
+    'Emma J out \n' +
+    ' \n' +
+    'Katlin open pm \n' +
+    'Jenna open pm  \n' +
+    'Emma G open pm \n' +
+    ' \n' +
+    'TaEc am- Jessica \n' +
+    'WyAn am- Taylor O \n' +
+    'TaFi am- Jenna \n' +
+    'AiTh am- Kylie Jo \n' +
+    'LaRh am - Katlin \n' +
+    '\n' +
+    '\n' +
+    '6/4 \n' +
+    'Sadie out \n' +
+    'Brooklyn out \n' +
+    'Kaylie out \n' +
+    ' \n' +
+    'MePo canceled \n' +
+    'HuMi out \n' +
+    'CoMi out  \n' +
+    'ElBu out pm \n' +
+    'MaWi out \n' +
+    'JaHa out \n' +
+    'ReMa out \n' +
+    ' \n' +
+    'Breanna open am \n' +
+    ' \n' +
+    'Karly open pm \n' +
+    'JoNo am- Phillip \n' +
+    'HaWo needs covered am- Matthew \n' +
+    'WiSn needs covered am- Jaucelyn \n' +
+    'YaRuCa needs covered am- Melissa \n' +
+    'WiSn needs covered pm- Phillip'
+}
+💾 Created override: {
+  id: 58,
+  date: 2025-06-04T00:00:00.000Z,
+  type: 'cancellation',
+  day: 'Wednesday',
+  block: 'PM',
+  originalStaffId: null,
+  originalClientId: 16,
+  newStaffId: null,
+  newClientId: null,
+  reason: 'Client cancellation via Teams: 6/4 \n' +
+    ' \n' +
+    'MaNe out pm \n' +
+    'MeKo out \n' +
+    ' \n' +
+    'Emma J out \n' +
+    ' \n' +
+    'Katlin open pm \n' +
+    'Jenna open pm  \n' +
+    'Emma G open pm \n' +
+    ' \n' +
+    'TaEc am- Jessica \n' +
+    'WyAn am- Taylor O \n' +
+    'TaFi am- Jenna \n' +
+    'AiTh am- Kylie Jo \n' +
+    'LaRh am - Katlin \n' +
+    '\n' +
+    '\n' +
+    '6/4 \n' +
+    'Sadie out \n' +
+    'Brooklyn out \n' +
+    'Kaylie out \n' +
+    ' \n' +
+    'MePo canceled \n' +
+    'HuMi out \n' +
+    'CoMi out  \n' +
+    'ElBu out pm \n' +
+    'MaWi out \n' +
+    'JaHa out \n' +
+    'ReMa out \n' +
+    ' \n' +
+    'Breanna open am \n' +
+    ' \n' +
+    'Karly open pm \n' +
+    'JoNo am- Phillip \n' +
+    'HaWo needs covered am- Matthew \n' +
+    'WiSn needs covered am- Jaucelyn \n' +
+    'YaRuCa needs covered am- Melissa \n' +
+    'WiSn needs covered pm- Phillip',
+  status: 'active',
+  createdBy: 'Michelle Roe',
+  createdAt: 2025-06-04T12:41:20.729Z,
+  updatedAt: 2025-06-04T12:41:20.729Z,
+  originalClient: {
+    id: 16,
+    name: 'MePo',
+    locations: [
+      'South Office',
+      'East Branch',
+      'Downtown Clinic',
+      'North Center',
+      'West Side'
+    ],
+    authorizedHours: 40,
+    availability: {
+      'Friday-AM': true,
+      'Friday-PM': true,
+      'Monday-AM': true,
+      'Monday-PM': true,
+      'Tuesday-AM': true,
+      'Tuesday-PM': true,
+      'Thursday-AM': true,
+      'Thursday-PM': true,
+      'Wednesday-AM': true,
+      'Wednesday-PM': true
+    },
+    createdAt: 2025-06-02T12:28:03.154Z,
+    updatedAt: 2025-06-02T12:28:03.154Z
+  }
+}
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': '15ae6a0c-18fd-4226-9c07-6d15995f2468',
+      'client-request-id': '15ae6a0c-18fd-4226-9c07-6d15995f2468',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"005","RoleInstance":"SJ1PEPF00001C67"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 12:48:09 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '2113'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749040946519',
+      replyToId: '1749040946519',
+      etag: '1749041063940',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T12:42:26.519Z',
+      lastModifiedDateTime: '2025-06-04T12:44:23.94Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [Array],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749040946519?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: '6/3 changes (sorry):\nKatlin had ZaHa 1-5\nKylie had MaAd 1-5',
+  sender: 'RJ Garcia',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "15ae6a0c-18fd-4226-9c07-6d15995f2468",\n' +
+    '      "client-request-id": "15ae6a0c-18fd-4226-9c07-6d15995f2468",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"005\\",\\"RoleInstance\\":\\"SJ1PEPF00001C67\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 12:48:09 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "2113"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749040946519",\n' +
+    '      "replyToId": "1749040946519",\n' +
+    '      "etag": "1749041063940",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T12:42:26.519Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T12:44:23.94Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "1ebd1dc0-a844-4ef9-b0ec-55f466e74908",\n' +
+    '          "displayName": "RJ Garcia",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<div>6/3 changes (sorry):<br>\\nKatlin had ZaHa 1-5<br>\\nKylie had MaAd 1-5</div>",\n' +
+    '        "plainTextContent": "6/3 changes (sorry):\\nKatlin had ZaHa 1-5\\nKylie had MaAd 1-5"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [\n' +
+    '        {\n' +
+    '          "reactionType": "✅",\n' +
+    '          "displayName": "Checkmark button",\n' +
+    '          "reactionContentUrl": null,\n' +
+    '          "createdDateTime": "2025-06-04T12:44:23.95Z",\n' +
+    '          "user": {\n' +
+    '            "application": null,\n' +
+    '            "device": null,\n' +
+    '            "user": {\n' +
+    '              "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '              "id": "855e952f-54e2-4ed1-92c6-0100be32b451",\n' +
+    '              "displayName": null,\n' +
+    '              "userIdentityType": "aadUser",\n' +
+    '              "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '            }\n' +
+    '          }\n' +
+    '        }\n' +
+    '      ],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749040946519?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'fe185f4a-4de2-44b9-8717-dc5d7efca1c4',
+      'client-request-id': 'fe185f4a-4de2-44b9-8717-dc5d7efca1c4',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"007","RoleInstance":"BY3PEPF00063AEF"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 13:51:42 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '2098'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749043541210',
+      replyToId: '1749043541210',
+      etag: '1749043588789',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T13:25:41.21Z',
+      lastModifiedDateTime: '2025-06-04T13:26:28.789Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [Array],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749043541210?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'I had WyAn 9-9:15, Taylor o picked up 9:15-12:30 (staff late)',
+  sender: 'Jordan Sampson',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "fe185f4a-4de2-44b9-8717-dc5d7efca1c4",\n' +
+    '      "client-request-id": "fe185f4a-4de2-44b9-8717-dc5d7efca1c4",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"007\\",\\"RoleInstance\\":\\"BY3PEPF00063AEF\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 13:51:42 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "2098"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749043541210",\n' +
+    '      "replyToId": "1749043541210",\n' +
+    '      "etag": "1749043588789",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T13:25:41.21Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T13:26:28.789Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "966351cc-d417-4d5e-bb2b-1ef3af5f5006",\n' +
+    '          "displayName": "Jordan Sampson",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "text",\n' +
+    '        "content": "I had WyAn 9-9:15, Taylor o picked up 9:15-12:30 (staff late)",\n' +
+    '        "plainTextContent": "I had WyAn 9-9:15, Taylor o picked up 9:15-12:30 (staff late)"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [\n' +
+    '        {\n' +
+    '          "reactionType": "✅",\n' +
+    '          "displayName": "Checkmark button",\n' +
+    '          "reactionContentUrl": null,\n' +
+    '          "createdDateTime": "2025-06-04T13:26:28.8Z",\n' +
+    '          "user": {\n' +
+    '            "application": null,\n' +
+    '            "device": null,\n' +
+    '            "user": {\n' +
+    '              "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '              "id": "855e952f-54e2-4ed1-92c6-0100be32b451",\n' +
+    '              "displayName": null,\n' +
+    '              "userIdentityType": "aadUser",\n' +
+    '              "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '            }\n' +
+    '          }\n' +
+    '        }\n' +
+    '      ],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749043541210?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'afff4a23-a4f7-4a6e-802c-8cb5f6d6a6db',
+      'client-request-id': 'afff4a23-a4f7-4a6e-802c-8cb5f6d6a6db',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"BY3PEPF00060740"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 19:16:44 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1515'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749057048777',
+      replyToId: '1749057048777',
+      etag: '1749057048777',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T17:10:48.777Z',
+      lastModifiedDateTime: '2025-06-04T17:10:48.777Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749057048777?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'Emma G with JaLa 1-115, with Jessica 115-5',
+  sender: 'Haley Lee',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "afff4a23-a4f7-4a6e-802c-8cb5f6d6a6db",\n' +
+    '      "client-request-id": "afff4a23-a4f7-4a6e-802c-8cb5f6d6a6db",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"002\\",\\"RoleInstance\\":\\"BY3PEPF00060740\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 19:16:44 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1515"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749057048777",\n' +
+    '      "replyToId": "1749057048777",\n' +
+    '      "etag": "1749057048777",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T17:10:48.777Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T17:10:48.777Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "6710b016-55a0-4542-866d-2c7788a5445c",\n' +
+    '          "displayName": "Haley Lee",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>Emma G with JaLa 1-115, with Jessica 115-5</p>",\n' +
+    '        "plainTextContent": "Emma G with JaLa 1-115, with Jessica 115-5"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749057048777?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': 'eec88981-87c8-4263-a704-b10455ef8b44',
+      'client-request-id': 'eec88981-87c8-4263-a704-b10455ef8b44',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"002","RoleInstance":"BY3PEPF00019AE2"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 19:21:28 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1519'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749057063015',
+      replyToId: '1749057063015',
+      etag: '1749057063015',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T17:11:03.015Z',
+      lastModifiedDateTime: '2025-06-04T17:11:03.015Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749057063015?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'Emma G with JeCo 115-5, Jordan had him 115-5',
+  sender: 'Haley Lee',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "eec88981-87c8-4263-a704-b10455ef8b44",\n' +
+    '      "client-request-id": "eec88981-87c8-4263-a704-b10455ef8b44",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"002\\",\\"RoleInstance\\":\\"BY3PEPF00019AE2\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 19:21:28 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1519"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749057063015",\n' +
+    '      "replyToId": "1749057063015",\n' +
+    '      "etag": "1749057063015",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T17:11:03.015Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T17:11:03.015Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "6710b016-55a0-4542-866d-2c7788a5445c",\n' +
+    '          "displayName": "Haley Lee",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>Emma G with JeCo 115-5, Jordan had him 115-5</p>",\n' +
+    '        "plainTextContent": "Emma G with JeCo 115-5, Jordan had him 115-5"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749057063015?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': '33590204-fa5d-4b9b-8cd8-5a990cb4ba9a',
+      'client-request-id': '33590204-fa5d-4b9b-8cd8-5a990cb4ba9a',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"004","RoleInstance":"BY3PEPF0006075A"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 19:39:06 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1840'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749057190038',
+      replyToId: '1749057190038',
+      etag: '1749057190038',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T17:13:10.038Z',
+      lastModifiedDateTime: '2025-06-04T17:13:10.038Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749057190038?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'Erika had HeCa direct 9 to 945, then picked up KaTu HeCa 945 to 1\n' +
+    ' \n' +
+    'LaRh joined the group at 1230 until 1 for lunch.\n' +
+    ' \n' +
+    'I didnt see this posted. So just wanted to make sure :)',
+  sender: 'Brittany Walsh',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "33590204-fa5d-4b9b-8cd8-5a990cb4ba9a",\n' +
+    '      "client-request-id": "33590204-fa5d-4b9b-8cd8-5a990cb4ba9a",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"004\\",\\"RoleInstance\\":\\"BY3PEPF0006075A\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 19:39:06 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1840"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749057190038",\n' +
+    '      "replyToId": "1749057190038",\n' +
+    '      "etag": "1749057190038",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T17:13:10.038Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T17:13:10.038Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "1b6bafd1-8ab3-4cc5-b891-ed65f3a13e08",\n' +
+    '          "displayName": "Brittany Walsh",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>Erika had HeCa direct 9 to 945, then picked up KaTu HeCa 945 to 1</p>\\n<p>&nbsp;</p>\\n<p>LaRh joined the group at 1230 until 1 for lunch.</p>\\n<p>&nbsp;</p>\\n<p>I didnt see this posted. So just wanted to make sure :)</p>",\n' +
+    '        "plainTextContent": "Erika had HeCa direct 9 to 945, then picked up KaTu HeCa 945 to 1\\n&nbsp;\\nLaRh joined the group at 1230 until 1 for lunch.\\n&nbsp;\\nI didnt see this posted. So just wanted to make sure :)"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749057190038?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': '6ed80234-c78a-44b8-9fac-36bce245784d',
+      'client-request-id': '6ed80234-c78a-44b8-9fac-36bce245784d',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"000","RoleInstance":"BY1PEPF0001D98E"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 19:42:01 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '2175'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749060066483',
+      replyToId: '1749060066483',
+      etag: '1749060066483',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T18:01:06.483Z',
+      lastModifiedDateTime: '2025-06-04T18:01:06.483Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [Array],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749060066483?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'UPDATE:  I had him 1 to 2\n \nBritni taking him 2 to 5',
+  sender: 'Brittany Walsh',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "6ed80234-c78a-44b8-9fac-36bce245784d",\n' +
+    '      "client-request-id": "6ed80234-c78a-44b8-9fac-36bce245784d",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"000\\",\\"RoleInstance\\":\\"BY1PEPF0001D98E\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 19:42:01 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "2175"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749060066483",\n' +
+    '      "replyToId": "1749060066483",\n' +
+    '      "etag": "1749060066483",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T18:01:06.483Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T18:01:06.483Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "1b6bafd1-8ab3-4cc5-b891-ed65f3a13e08",\n' +
+    '          "displayName": "Brittany Walsh",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<attachment id=\\"1749056770303\\"></attachment>\\n<p>UPDATE:&nbsp;&nbsp;I had him 1 to 2</p>\\n<p>&nbsp;</p>\\n<p>Britni taking him 2 to 5</p>",\n' +
+    '        "plainTextContent": "\\nUPDATE:&nbsp;&nbsp;I had him 1 to 2\\n&nbsp;\\nBritni taking him 2 to 5"\n' +
+    '      },\n' +
+    '      "attachments": [\n' +
+    '        {\n' +
+    '          "id": "1749056770303",\n' +
+    '          "contentType": "messageReference",\n' +
+    '          "contentUrl": null,\n' +
+    '          "content": "{\\"messageId\\":\\"1749056770303\\",\\"messagePreview\\":\\"Brittany W with LaRh 1 to 5\\",\\"messageSender\\":{\\"application\\":null,\\"device\\":null,\\"user\\":{\\"userIdentityType\\":\\"aadUser\\",\\"tenantId\\":\\"2088396a-9b38-4d2a-a798-8def42ad9969\\",\\"id\\":\\"1b6bafd1-8ab3-4cc5-b891-ed65f3a13e08\\",\\"displayName\\":\\"Brittany Walsh\\"}}}",\n' +
+    '          "name": null,\n' +
+    '          "thumbnailUrl": null,\n' +
+    '          "teamsAppId": null\n' +
+    '        }\n' +
+    '      ],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749060066483?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message
+📨 Teams webhook received: {
+  originalMessage: {
+    statusCode: 200,
+    headers: {
+      'Transfer-Encoding': 'chunked',
+      Vary: 'Accept-Encoding',
+      'Strict-Transport-Security': 'max-age=31536000',
+      'request-id': '3c43ad47-6f4d-4d2c-8163-19e385867dab',
+      'client-request-id': '3c43ad47-6f4d-4d2c-8163-19e385867dab',
+      'x-ms-ags-diagnostic': '{"ServerInfo":{"DataCenter":"West US","Slice":"E","Ring":"4","ScaleUnit":"001","RoleInstance":"BY1PEPF0001D9AD"}}',
+      'OData-Version': '4.0',
+      'x-ms-client-region': 'unitedstates',
+      'x-ms-flavor': 'Production',
+      'X-Ms-Workflow-Resourcegroup-Name': 'selfhostingresourcegroup',
+      'x-ms-workflow-subscription-id': 'Default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-environment-id': 'default-2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-tenant-id': '2088396a-9b38-4d2a-a798-8def42ad9969',
+      'x-ms-dlp-re': '-|-',
+      'x-ms-dlp-gu': '-|-',
+      'x-ms-dlp-ef': '-|-/-|-|-',
+      'Timing-Allow-Origin': '*',
+      'x-ms-apihub-cached-response': 'true',
+      'x-ms-apihub-obo': 'false',
+      Date: 'Wed, 04 Jun 2025 19:56:16 GMT',
+      'Content-Type': 'application/json',
+      'Content-Length': '1490'
+    },
+    body: {
+      '@odata.context': "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",
+      id: '1749056770303',
+      replyToId: '1749056770303',
+      etag: '1749056770303',
+      messageType: 'message',
+      createdDateTime: '2025-06-04T17:06:10.303Z',
+      lastModifiedDateTime: '2025-06-04T17:06:10.303Z',
+      lastEditedDateTime: null,
+      deletedDateTime: null,
+      subject: null,
+      summary: null,
+      chatId: '19:4d665812ef19459282f20d855d17c631@thread.v2',
+      importance: 'normal',
+      locale: 'en-us',
+      webUrl: null,
+      channelIdentity: null,
+      policyViolation: null,
+      eventDetail: null,
+      from: [Object],
+      body: [Object],
+      attachments: [],
+      mentions: [],
+      reactions: [],
+      messageLink: 'https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749056770303?context=%7B%22contextType%22:%22chat%22%7D',
+      threadType: 'chat',
+      conversationId: '19:4d665812ef19459282f20d855d17c631@thread.v2'
+    }
+  },
+  parsedMessage: 'Brittany W with LaRh 1 to 5',
+  sender: 'Brittany Walsh',
+  timestamp: '2024-06-03',
+  body: {
+    message: { statusCode: 200, headers: [Object], body: [Object] },
+    sender: 'Chat User',
+    timestamp: '2024-06-03'
+  },
+  fullRequest: '{\n' +
+    '  "message": {\n' +
+    '    "statusCode": 200,\n' +
+    '    "headers": {\n' +
+    '      "Transfer-Encoding": "chunked",\n' +
+    '      "Vary": "Accept-Encoding",\n' +
+    '      "Strict-Transport-Security": "max-age=31536000",\n' +
+    '      "request-id": "3c43ad47-6f4d-4d2c-8163-19e385867dab",\n' +
+    '      "client-request-id": "3c43ad47-6f4d-4d2c-8163-19e385867dab",\n' +
+    '      "x-ms-ags-diagnostic": "{\\"ServerInfo\\":{\\"DataCenter\\":\\"West US\\",\\"Slice\\":\\"E\\",\\"Ring\\":\\"4\\",\\"ScaleUnit\\":\\"001\\",\\"RoleInstance\\":\\"BY1PEPF0001D9AD\\"}}",\n' +
+    '      "OData-Version": "4.0",\n' +
+    '      "x-ms-client-region": "unitedstates",\n' +
+    '      "x-ms-flavor": "Production",\n' +
+    '      "X-Ms-Workflow-Resourcegroup-Name": "selfhostingresourcegroup",\n' +
+    '      "x-ms-workflow-subscription-id": "Default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-environment-id": "default-2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-tenant-id": "2088396a-9b38-4d2a-a798-8def42ad9969",\n' +
+    '      "x-ms-dlp-re": "-|-",\n' +
+    '      "x-ms-dlp-gu": "-|-",\n' +
+    '      "x-ms-dlp-ef": "-|-/-|-|-",\n' +
+    '      "Timing-Allow-Origin": "*",\n' +
+    '      "x-ms-apihub-cached-response": "true",\n' +
+    '      "x-ms-apihub-obo": "false",\n' +
+    '      "Date": "Wed, 04 Jun 2025 19:56:16 GMT",\n' +
+    '      "Content-Type": "application/json",\n' +
+    '      "Content-Length": "1490"\n' +
+    '    },\n' +
+    '    "body": {\n' +
+    `      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A4d665812ef19459282f20d855d17c631%40thread.v2')/messages/$entity",\n` +
+    '      "id": "1749056770303",\n' +
+    '      "replyToId": "1749056770303",\n' +
+    '      "etag": "1749056770303",\n' +
+    '      "messageType": "message",\n' +
+    '      "createdDateTime": "2025-06-04T17:06:10.303Z",\n' +
+    '      "lastModifiedDateTime": "2025-06-04T17:06:10.303Z",\n' +
+    '      "lastEditedDateTime": null,\n' +
+    '      "deletedDateTime": null,\n' +
+    '      "subject": null,\n' +
+    '      "summary": null,\n' +
+    '      "chatId": "19:4d665812ef19459282f20d855d17c631@thread.v2",\n' +
+    '      "importance": "normal",\n' +
+    '      "locale": "en-us",\n' +
+    '      "webUrl": null,\n' +
+    '      "channelIdentity": null,\n' +
+    '      "policyViolation": null,\n' +
+    '      "eventDetail": null,\n' +
+    '      "from": {\n' +
+    '        "application": null,\n' +
+    '        "device": null,\n' +
+    '        "user": {\n' +
+    '          "@odata.type": "#microsoft.graph.teamworkUserIdentity",\n' +
+    '          "id": "1b6bafd1-8ab3-4cc5-b891-ed65f3a13e08",\n' +
+    '          "displayName": "Brittany Walsh",\n' +
+    '          "userIdentityType": "aadUser",\n' +
+    '          "tenantId": "2088396a-9b38-4d2a-a798-8def42ad9969"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "body": {\n' +
+    '        "contentType": "html",\n' +
+    '        "content": "<p>Brittany W with LaRh 1 to 5</p>",\n' +
+    '        "plainTextContent": "Brittany W with LaRh 1 to 5"\n' +
+    '      },\n' +
+    '      "attachments": [],\n' +
+    '      "mentions": [],\n' +
+    '      "reactions": [],\n' +
+    '      "messageLink": "https://teams.microsoft.com/l/message/19:4d665812ef19459282f20d855d17c631@thread.v2/1749056770303?context=%7B%22contextType%22:%22chat%22%7D",\n' +
+    '      "threadType": "chat",\n' +
+    '      "conversationId": "19:4d665812ef19459282f20d855d17c631@thread.v2"\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "sender": "Chat User",\n' +
+    '  "timestamp": "2024-06-03"\n' +
+    '}'
+}
+❌ Could not parse cancellation from message

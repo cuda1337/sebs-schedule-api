@@ -1,0 +1,211 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Staff {
+  id           Int              @id @default(autoincrement())
+  name         String
+  locations    String[]         // Array of location names
+  availability Json             // {"Monday-AM": true, "Monday-PM": false, ...}
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  
+  assignments       Assignment[]
+  groupSessions     GroupSession[]
+  changeLogs        ChangeLog[]     @relation("ChangeLogStaff")
+  originalOverrides DailyOverride[] @relation("OriginalStaff")
+  newOverrides      DailyOverride[] @relation("NewStaff")
+}
+
+model Client {
+  id              Int              @id @default(autoincrement())
+  name            String
+  locations       String[]
+  authorizedHours Float            @default(0)
+  availability    Json
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  assignments      Assignment[]
+  groupSessionClients GroupSessionClient[]
+  changeLogs       ChangeLog[]     @relation("ChangeLogClient")
+  originalOverrides DailyOverride[] @relation("OriginalClient")
+  newOverrides      DailyOverride[] @relation("NewClient")
+  supervisorHistory ClientSupervisor[]
+}
+
+model ScheduleVersion {
+  id          Int      @id @default(autoincrement())
+  name        String   // e.g., "Main", "Hypothetical - Option A", "Planned - Jan 2025"
+  type        String   // "main", "hypothetical", "planned"
+  status      String   @default("active") // "active", "archived", "committed"
+  startDate   DateTime? // For planned schedules
+  description String?
+  createdBy   String   @default("system")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  assignments  Assignment[]
+  groupSessions GroupSession[]
+  changeLogs   ChangeLog[]
+  
+  @@index([type, status])
+}
+
+model Assignment {
+  id        Int      @id @default(autoincrement())
+  day       String   // "Monday", "Tuesday", etc.
+  block     String   // "AM" or "PM"
+  staffId   Int
+  clientId  Int
+  versionId Int      @default(1) // Links to ScheduleVersion (default to main)
+  isGroup   Boolean  @default(false) // True if this is part of a group session
+  groupSessionId Int? // References GroupSession if part of group
+  plannedDate DateTime? // For planned assignments, when they should take effect
+  
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  version   ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  groupSession GroupSession? @relation(fields: [groupSessionId], references: [id], onDelete: SetNull)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // For group sessions, multiple clients can have same staff/day/block
+  // For individual sessions, enforce uniqueness
+  @@index([versionId, day, block, staffId])
+  @@index([versionId, day, block, clientId])
+  @@index([staffId])
+  @@index([clientId])
+}
+
+model GroupSession {
+  id        Int      @id @default(autoincrement())
+  day       String   // "Monday", "Tuesday", etc.
+  block     String   // "AM" or "PM"
+  staffId   Int
+  versionId Int      @default(1)
+  location  String   // All clients must be at same location
+  maxSize   Int      @default(4) // Maximum clients in group
+  
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  version   ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  clients   GroupSessionClient[]
+  assignments Assignment[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([versionId, day, block, staffId])
+  @@index([versionId, day, block])
+}
+
+model GroupSessionClient {
+  id             Int          @id @default(autoincrement())
+  groupSessionId Int
+  clientId       Int
+  
+  groupSession   GroupSession @relation(fields: [groupSessionId], references: [id], onDelete: Cascade)
+  client         Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupSessionId, clientId])
+  @@index([clientId])
+}
+
+model ChangeLog {
+  id               Int      @id @default(autoincrement())
+  versionId        Int      // Which version this change belongs to
+  changeType       String   // "assignment_added", "assignment_removed", "group_session_created", etc.
+  entityType       String   // "assignment", "group_session", "staff", "client"
+  entityId         Int?     // ID of the entity changed
+  
+  // Assignment specific fields
+  day              String?
+  block            String?
+  staffId          Int?
+  clientId         Int?
+  
+  // Change details
+  previousValue    Json?    // Previous state
+  newValue         Json?    // New state
+  
+  // Review tracking
+  reviewed         Boolean  @default(false)
+  reviewedAt       DateTime?
+  reviewedBy       String?
+  
+  // Metadata
+  committedToMain  Boolean  @default(false)
+  committedAt      DateTime?
+  createdBy        String   @default("system")
+  createdAt        DateTime @default(now())
+  notes            String?
+  
+  version          ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  staff            Staff?   @relation("ChangeLogStaff", fields: [staffId], references: [id], onDelete: SetNull)
+  client           Client?  @relation("ChangeLogClient", fields: [clientId], references: [id], onDelete: SetNull)
+  
+  @@index([versionId, committedToMain])
+  @@index([createdAt])
+  @@index([staffId])
+  @@index([clientId])
+}
+
+model DailyOverride {
+  id               Int      @id @default(autoincrement())
+  date             DateTime @db.Date  // The specific date this override applies to
+  type             String   // "callout", "cancellation", "reassignment"
+  
+  // Original assignment info (what's being overridden)
+  day              String   // Day of week from the assignment
+  block            String   // Time block from the assignment
+  originalStaffId  Int?
+  originalClientId Int?
+  
+  // Override details
+  newStaffId       Int?     // For reassignments
+  newClientId      Int?     // For reassignments
+  reason           String   // Why the override happened
+  hours            Float?   // Actual hours for this override (especially for callouts)
+  
+  // Metadata
+  status           String   @default("active") // "active", "expired"
+  createdBy        String   @default("system")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  originalStaff    Staff?   @relation("OriginalStaff", fields: [originalStaffId], references: [id], onDelete: SetNull)
+  originalClient   Client?  @relation("OriginalClient", fields: [originalClientId], references: [id], onDelete: SetNull)
+  newStaff         Staff?   @relation("NewStaff", fields: [newStaffId], references: [id], onDelete: SetNull)
+  newClient        Client?  @relation("NewClient", fields: [newClientId], references: [id], onDelete: SetNull)
+  
+  @@index([date, status])
+  @@index([createdAt])
+}
+
+model ClientSupervisor {
+  id            Int      @id @default(autoincrement())
+  clientId      Int
+  supervisorName String  // Free text field for supervisor name
+  effectiveDate DateTime @db.Date // When this supervisor assignment takes effect
+  endDate       DateTime? @db.Date // When this supervisor assignment ends (null for current)
+  createdBy     String   @default("system")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  @@index([clientId, effectiveDate])
+  @@index([supervisorName])
+  @@index([effectiveDate])
+}
