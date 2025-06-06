@@ -6,7 +6,7 @@
     "dev": "npx ts-node src/server.ts",
     "dev:watch": "npx nodemon --exec ts-node src/server.ts",
     "build": "prisma generate",
-    "start": "npx ts-node src/server.ts",
+    "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
