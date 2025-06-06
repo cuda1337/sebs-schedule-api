@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "npx ts-node src/server.ts",
-    "dev:watch": "npx nodemon --exec ts-node src/server.ts",
     "build": "prisma generate",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
@@ -22,9 +20,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^6.8.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "prisma": "^6.8.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
