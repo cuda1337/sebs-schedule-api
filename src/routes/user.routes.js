@@ -29,7 +29,7 @@ router.get('/', authMiddleware, requireRole(['admin']), async (req, res) => {
 // Create user (admin only)
 router.post('/', authMiddleware, requireRole(['admin']), async (req, res) => {
   try {
-    const { email, password, name, role = 'staff' } = req.body;
+    const { email, password, name, role = 'bcba' } = req.body;
     
     // Validation
     if (!email || !password || !name) {
@@ -40,8 +40,8 @@ router.post('/', authMiddleware, requireRole(['admin']), async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
     
-    if (!['admin', 'manager', 'staff'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role' });
+    if (!['admin', 'bcba'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Must be admin or bcba' });
     }
     
     // Check if user exists
@@ -86,16 +86,21 @@ router.put('/:id', authMiddleware, requireRole(['admin']), async (req, res) => {
     const { id } = req.params;
     const { name, role, isActive } = req.body;
     
+    console.log('Update user request:', { id, name, role, isActive });
+    
     // Build update data
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (role !== undefined) {
-      if (!['admin', 'manager', 'staff'].includes(role)) {
-        return res.status(400).json({ error: 'Invalid role' });
+      if (!['admin', 'bcba'].includes(role)) {
+        console.log('Invalid role provided:', role);
+        return res.status(400).json({ error: 'Invalid role. Must be admin or bcba' });
       }
       updateData.role = role;
     }
     if (isActive !== undefined) updateData.isActive = isActive;
+    
+    console.log('Update data:', updateData);
     
     // Update user
     const user = await req.prisma.user.update({
@@ -110,6 +115,7 @@ router.put('/:id', authMiddleware, requireRole(['admin']), async (req, res) => {
       }
     });
     
+    console.log('Updated user:', user);
     res.json(user);
   } catch (error) {
     console.error('Error updating user:', error);
@@ -123,18 +129,20 @@ router.delete('/:id', authMiddleware, requireRole(['admin']), async (req, res) =
     const { id } = req.params;
     const userId = parseInt(id);
     
+    console.log('Delete user request:', { userId, requesterId: req.user.id });
+    
     // Don't allow deleting yourself
     if (userId === req.user.id) {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
     
-    // Soft delete by deactivating
-    await req.prisma.user.update({
-      where: { id: userId },
-      data: { isActive: false }
+    // Actually delete the user
+    await req.prisma.user.delete({
+      where: { id: userId }
     });
     
-    res.json({ message: 'User deactivated successfully' });
+    console.log('User deleted successfully:', userId);
+    res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Error deleting user:', error);
     res.status(500).json({ error: 'Failed to delete user' });

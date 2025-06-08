@@ -68,9 +68,8 @@ app.use('/api/auth', authRoutes);
 // User management routes (authentication required)
 app.use('/api/users', userRoutes);
 
-// Apply optional authentication to all other routes
-// This allows the app to work with or without login
-app.use(optionalAuth);
+// Require authentication for all main app routes
+app.use(authMiddleware);
 
 // Client routes
 app.get('/api/clients', async (req, res) => {

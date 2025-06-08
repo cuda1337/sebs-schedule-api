@@ -17,7 +17,7 @@ model User {
   email        String   @unique
   password     String   // Hashed with bcrypt
   name         String   // Display name
-  role         String   @default("staff") // "admin", "manager", "staff"
+  role         String   @default("bcba") // "admin", "bcba"
   isActive     Boolean  @default(true)
   lastLogin    DateTime?
   createdAt    DateTime @default(now())
