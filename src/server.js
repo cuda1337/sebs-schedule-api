@@ -4,6 +4,9 @@ const { PrismaClient } = require('@prisma/client');
 const scheduleVersionRoutes = require('./routes/scheduleVersion.routes');
 const groupSessionRoutes = require('./routes/groupSession.routes');
 const supervisorRoutes = require('./routes/supervisor.routes');
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const { authMiddleware, optionalAuth } = require('./middleware/auth');
 
 // Try to load daily override routes if they exist
 let dailyOverrideRoutes;
@@ -39,6 +42,16 @@ app.use((req, res, next) => {
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Auth routes (no authentication required)
+app.use('/api/auth', authRoutes);
+
+// User management routes (authentication required)
+app.use('/api/users', userRoutes);
+
+// Apply optional authentication to all other routes
+// This allows the app to work with or without login
+app.use(optionalAuth);
 
 // Client routes
 app.get('/api/clients', async (req, res) => {

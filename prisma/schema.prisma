@@ -11,6 +11,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// NEW: User model for authentication
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  password     String   // Hashed with bcrypt
+  name         String   // Display name
+  role         String   @default("staff") // "admin", "manager", "staff"
+  isActive     Boolean  @default(true)
+  lastLogin    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Track what users create/modify
+  changeLogs   ChangeLog[] @relation("UserChangeLogs")
+  
+  @@index([email])
+}
+
 model Staff {
   id           Int              @id @default(autoincrement())
   name         String
@@ -142,17 +160,20 @@ model ChangeLog {
   reviewed         Boolean  @default(false)
   reviewedAt       DateTime?
   reviewedBy       String?
+  reviewedByUserId Int?     // NEW: Link to User who reviewed
   
   // Metadata
   committedToMain  Boolean  @default(false)
   committedAt      DateTime?
   createdBy        String   @default("system")
+  createdByUserId  Int?     // NEW: Link to User who created
   createdAt        DateTime @default(now())
   notes            String?
   
   version          ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
   staff            Staff?   @relation("ChangeLogStaff", fields: [staffId], references: [id], onDelete: SetNull)
   client           Client?  @relation("ChangeLogClient", fields: [clientId], references: [id], onDelete: SetNull)
+  createdByUser    User?    @relation("UserChangeLogs", fields: [createdByUserId], references: [id], onDelete: SetNull)
   
   @@index([versionId, committedToMain])
   @@index([createdAt])
