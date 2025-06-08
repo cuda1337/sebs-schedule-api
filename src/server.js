@@ -7,6 +7,7 @@ const supervisorRoutes = require('./routes/supervisor.routes');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const { authMiddleware, optionalAuth } = require('./middleware/auth');
+const { initDatabase } = require('./initDatabase');
 
 // Try to load daily override routes if they exist
 let dailyOverrideRoutes;
@@ -818,6 +819,9 @@ const startServer = async () => {
     if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('YOUR_PASSWORD')) {
       await prisma.$connect();
       console.log('✅ Database connected successfully');
+      
+      // Initialize database schema and admin user
+      await initDatabase();
     } else {
       console.log('⚠️  No database configured - running in demo mode');
       console.log('   Set DATABASE_URL in .env to connect to database');
