@@ -815,14 +815,22 @@ if (dailyOverrideRoutes) {
 // Start server
 const startServer = async () => {
   try {
-    await prisma.$connect();
-    console.log('✅ Database connected successfully');
+    if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('YOUR_PASSWORD')) {
+      await prisma.$connect();
+      console.log('✅ Database connected successfully');
+    } else {
+      console.log('⚠️  No database configured - running in demo mode');
+      console.log('   Set DATABASE_URL in .env to connect to database');
+    }
     
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`   Frontend: http://localhost:5173`);
+      console.log(`   Backend: http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
+    console.log('💡 Try updating the DATABASE_URL in your .env file');
     process.exit(1);
   }
 };
