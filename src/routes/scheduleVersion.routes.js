@@ -212,19 +212,14 @@ router.post('/schedule-versions/:id/commit', async (req, res) => {
         }
       });
       
-      // Get all current main assignments
+      // Get all current main assignments for comparison
       const currentAssignments = await prisma.assignment.findMany({
-        where: { versionId: mainVersion.id }
-      });
-      
-      // Delete all current main assignments
-      await prisma.assignment.deleteMany({
-        where: { versionId: mainVersion.id }
-      });
-      
-      // Delete all current main group sessions
-      await prisma.groupSession.deleteMany({
-        where: { versionId: mainVersion.id }
+        where: { versionId: mainVersion.id },
+        include: {
+          staff: true,
+          client: true,
+          groupSession: true
+        }
       });
       
       // Track changes for change log
@@ -233,37 +228,87 @@ router.post('/schedule-versions/:id/commit', async (req, res) => {
       // Create map of current assignments for comparison
       const currentMap = new Map();
       currentAssignments.forEach(a => {
-        currentMap.set(`${a.day}-${a.block}-${a.staffId}-${a.clientId}`, a);
+        const key = `${a.day}-${a.block}-${a.staffId}-${a.clientId}`;
+        currentMap.set(key, a);
       });
       
-      // Copy all assignments from planned to main
+      // Create map of planned assignments to avoid duplicates
+      const plannedMap = new Map();
+      plannedAssignments.forEach(a => {
+        const key = `${a.day}-${a.block}-${a.staffId}-${a.clientId}`;
+        plannedMap.set(key, a);
+      });
+      
+      // Add new assignments from planned to main (skip duplicates)
       const groupSessionMap = new Map();
       
       for (const assignment of plannedAssignments) {
+        const key = `${assignment.day}-${assignment.block}-${assignment.staffId}-${assignment.clientId}`;
+        
+        // Skip if this assignment already exists in main
+        if (currentMap.has(key)) {
+          console.log(`Skipping duplicate assignment: ${key}`);
+          continue;
+        }
         // Handle group sessions
         if (assignment.isGroup && assignment.groupSessionId) {
           if (!groupSessionMap.has(assignment.groupSessionId)) {
-            // Create new group session in main
-            const newGroupSession = await prisma.groupSession.create({
-              data: {
+            // Check if there's already a group session at this time/location in main
+            const existingGroupSession = await prisma.groupSession.findFirst({
+              where: {
+                versionId: mainVersion.id,
                 day: assignment.groupSession.day,
                 block: assignment.groupSession.block,
                 staffId: assignment.groupSession.staffId,
-                versionId: mainVersion.id,
-                location: assignment.groupSession.location,
-                maxSize: assignment.groupSession.maxSize
+                location: assignment.groupSession.location
               }
             });
-            groupSessionMap.set(assignment.groupSessionId, newGroupSession.id);
             
-            // Add all clients to the group
-            for (const gc of assignment.groupSession.clients) {
-              await prisma.groupSessionClient.create({
+            if (existingGroupSession) {
+              // Use existing group session instead of creating new one
+              groupSessionMap.set(assignment.groupSessionId, existingGroupSession.id);
+              
+              // Add clients to existing group if they're not already there
+              for (const gc of assignment.groupSession.clients) {
+                const existingClient = await prisma.groupSessionClient.findFirst({
+                  where: {
+                    groupSessionId: existingGroupSession.id,
+                    clientId: gc.clientId
+                  }
+                });
+                
+                if (!existingClient) {
+                  await prisma.groupSessionClient.create({
+                    data: {
+                      groupSessionId: existingGroupSession.id,
+                      clientId: gc.clientId
+                    }
+                  });
+                }
+              }
+            } else {
+              // Create new group session in main
+              const newGroupSession = await prisma.groupSession.create({
                 data: {
-                  groupSessionId: newGroupSession.id,
-                  clientId: gc.clientId
+                  day: assignment.groupSession.day,
+                  block: assignment.groupSession.block,
+                  staffId: assignment.groupSession.staffId,
+                  versionId: mainVersion.id,
+                  location: assignment.groupSession.location,
+                  maxSize: assignment.groupSession.maxSize
                 }
               });
+              groupSessionMap.set(assignment.groupSessionId, newGroupSession.id);
+              
+              // Add all clients to the group
+              for (const gc of assignment.groupSession.clients) {
+                await prisma.groupSessionClient.create({
+                  data: {
+                    groupSessionId: newGroupSession.id,
+                    clientId: gc.clientId
+                  }
+                });
+              }
             }
           }
           
@@ -293,47 +338,19 @@ router.post('/schedule-versions/:id/commit', async (req, res) => {
           });
         }
         
-        // Track change
-        const key = `${assignment.day}-${assignment.block}-${assignment.staffId}-${assignment.clientId}`;
-        const previousAssignment = currentMap.get(key);
-        
-        if (!previousAssignment) {
-          // New assignment
-          changes.push({
-            versionId: versionId,
-            changeType: 'assignment_added',
-            entityType: 'assignment',
-            day: assignment.day,
-            block: assignment.block,
-            staffId: assignment.staffId,
-            clientId: assignment.clientId,
-            newValue: {
-              staff: assignment.staff.name,
-              client: assignment.client.name,
-              isGroup: assignment.isGroup
-            },
-            committedToMain: true,
-            committedAt: new Date(),
-            createdBy: 'user' // TODO: Get from auth
-          });
-        }
-        currentMap.delete(key);
-      }
-      
-      // Track deletions
-      for (const [key, assignment] of currentMap) {
+        // Track change - this is a new assignment being added
         changes.push({
           versionId: versionId,
-          changeType: 'assignment_removed',
+          changeType: 'assignment_added',
           entityType: 'assignment',
-          entityId: assignment.id,
           day: assignment.day,
           block: assignment.block,
           staffId: assignment.staffId,
           clientId: assignment.clientId,
-          previousValue: {
-            staffId: assignment.staffId,
-            clientId: assignment.clientId
+          newValue: {
+            staff: assignment.staff.name,
+            client: assignment.client.name,
+            isGroup: assignment.isGroup
           },
           committedToMain: true,
           committedAt: new Date(),
@@ -358,8 +375,9 @@ router.post('/schedule-versions/:id/commit', async (req, res) => {
     });
     
     res.json({ 
-      message: 'Schedule committed successfully', 
-      changesApplied: result.changes 
+      message: 'Planned schedule merged into main successfully', 
+      changesApplied: result.changes,
+      info: 'Only new assignments from planned schedule were added to main. Existing assignments were preserved.'
     });
   } catch (error) {
     console.error('Error committing schedule:', error);
