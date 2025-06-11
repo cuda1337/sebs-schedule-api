@@ -749,8 +749,9 @@ app.post('/api/assignments/swap', async (req, res) => {
         
         updatedAssignments = [sourceAssignment.id, targetAssignment.id];
         
-        // Create change log entry for cross-staff swap (main schedule only)
+        // Create TWO change log entries for cross-staff swap (main schedule only)
         if (sourceAssignment.versionId === 1) { // Assuming version 1 is main
+          // Change log entry for source staff (Staff A: Client X → Client Y)
           await tx.changeLog.create({
             data: {
               versionId: sourceAssignment.versionId,
@@ -763,24 +764,42 @@ app.post('/api/assignments/swap', async (req, res) => {
               clientId: parseInt(targetClientId),
               previousValue: {
                 clientName: sourceAssignment.client?.name,
-                clientId: sourceAssignment.clientId,
-                targetStaffName: targetAssignment.staff?.name,
-                targetStaffId: targetAssignment.staffId,
-                targetClientName: targetAssignment.client?.name,
-                targetClientId: targetAssignment.clientId
+                clientId: sourceAssignment.clientId
               },
               newValue: {
                 clientName: targetClient?.name,
-                clientId: parseInt(targetClientId),
-                targetStaffName: targetAssignment.staff?.name,
-                targetStaffId: targetAssignment.staffId,
-                targetClientName: sourceAssignment.client?.name,
-                targetClientId: sourceAssignment.clientId
+                clientId: parseInt(targetClientId)
               },
               committedToMain: true,
               committedAt: new Date(),
               createdBy: 'user',
-              notes: `Cross-staff swap: ${sourceAssignment.staff?.name} ↔ ${targetAssignment.staff?.name}`
+              notes: `Cross-staff swap with ${targetAssignment.staff?.name}`
+            }
+          });
+          
+          // Change log entry for target staff (Staff B: Client Y → Client X) 
+          await tx.changeLog.create({
+            data: {
+              versionId: sourceAssignment.versionId,
+              changeType: 'client_swapped',
+              entityType: 'assignment',
+              entityId: targetAssignment.id,
+              day: targetAssignment.day,
+              block: targetAssignment.block,
+              staffId: targetAssignment.staffId,
+              clientId: sourceAssignment.clientId,
+              previousValue: {
+                clientName: targetAssignment.client?.name,
+                clientId: targetAssignment.clientId
+              },
+              newValue: {
+                clientName: sourceAssignment.client?.name,
+                clientId: sourceAssignment.clientId
+              },
+              committedToMain: true,
+              committedAt: new Date(),
+              createdBy: 'user',
+              notes: `Cross-staff swap with ${sourceAssignment.staff?.name}`
             }
           });
         }
