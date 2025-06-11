@@ -42,6 +42,8 @@ model Staff {
   changeLogs        ChangeLog[]     @relation("ChangeLogStaff")
   originalOverrides DailyOverride[] @relation("OriginalStaff")
   newOverrides      DailyOverride[] @relation("NewStaff")
+  originalReassignments ReassignmentNeeded[] @relation("ReassignmentOriginalStaff")
+  plannedReassignments  ReassignmentNeeded[] @relation("ReassignmentPlannedStaff")
 }
 
 model Client {
@@ -59,6 +61,7 @@ model Client {
   originalOverrides DailyOverride[] @relation("OriginalClient")
   newOverrides      DailyOverride[] @relation("NewClient")
   supervisorHistory ClientSupervisor[]
+  reassignmentsNeeded ReassignmentNeeded[]
 }
 
 model ScheduleVersion {
@@ -229,4 +232,38 @@ model ClientSupervisor {
   @@index([clientId, effectiveDate])
   @@index([supervisorName])
   @@index([effectiveDate])
+}
+
+model ReassignmentNeeded {
+  id               Int      @id @default(autoincrement())
+  clientId         Int
+  originalStaffId  Int?     // Can be null if staff was deleted
+  originalStaffName String  // Store name in case staff is deleted
+  day              String   // Day of week
+  block            String   // AM/PM
+  location         String   // Service location
+  
+  // Tracking info
+  deletedAt        DateTime @default(now())
+  deletedBy        String   // User who deleted the assignment
+  status           String   @default("pending") // "pending", "planned", "reassigned", "dismissed"
+  
+  // Planned assignment info (if exists)
+  plannedStaffId   Int?
+  plannedDate      DateTime? @db.Date
+  
+  // Dismissal info
+  dismissedAt      DateTime?
+  dismissedBy      String?
+  dismissalReason  String?
+  
+  // Relations
+  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  originalStaff    Staff?   @relation("ReassignmentOriginalStaff", fields: [originalStaffId], references: [id], onDelete: SetNull)
+  plannedStaff     Staff?   @relation("ReassignmentPlannedStaff", fields: [plannedStaffId], references: [id], onDelete: SetNull)
+  
+  @@index([status, location])
+  @@index([status, day, block])
+  @@index([clientId])
+  @@index([deletedAt])
 }

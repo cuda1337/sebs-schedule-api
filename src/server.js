@@ -71,6 +71,10 @@ app.use('/api/users', userRoutes);
 // Require authentication for all main app routes
 app.use(authMiddleware);
 
+// Import reassignment routes
+const reassignmentRoutes = require('./routes/reassignment.routes');
+app.use('/api/reassignments', reassignmentRoutes);
+
 // Client routes
 app.get('/api/clients', async (req, res) => {
   try {
@@ -281,6 +285,84 @@ const createChangeLogEntry = async (changeType, versionId, assignment, previousA
   }
 };
 
+// Helper function to check and update reassignments when assignments are created
+const checkAndUpdateReassignments = async (assignment) => {
+  try {
+    // Only check for main schedule assignments
+    const version = await prisma.scheduleVersion.findUnique({
+      where: { id: assignment.versionId }
+    });
+    
+    if (!version || version.type !== 'main') {
+      return; // Skip for non-main schedules
+    }
+    
+    // Find any pending reassignments that match this assignment
+    const matchingReassignments = await prisma.reassignmentNeeded.findMany({
+      where: {
+        clientId: assignment.clientId,
+        day: assignment.day,
+        block: assignment.block,
+        status: { in: ['pending', 'planned'] }
+      }
+    });
+    
+    // Update matching reassignments to 'reassigned' status
+    for (const reassignment of matchingReassignments) {
+      await prisma.reassignmentNeeded.update({
+        where: { id: reassignment.id },
+        data: { status: 'reassigned' }
+      });
+      
+      console.log(`✅ Auto-resolved reassignment: ${reassignment.client?.name || 'Client'} ${assignment.day} ${assignment.block}`);
+    }
+    
+    // Also check for planned assignments that might indicate a reassignment is planned
+    const plannedAssignments = await prisma.assignment.findMany({
+      where: {
+        clientId: assignment.clientId,
+        day: assignment.day,
+        block: assignment.block,
+        version: {
+          type: 'planned',
+          status: 'active'
+        }
+      },
+      include: {
+        staff: true,
+        version: true
+      }
+    });
+    
+    // Update reassignments to show planned status if there are planned assignments
+    for (const plannedAssignment of plannedAssignments) {
+      const reassignments = await prisma.reassignmentNeeded.findMany({
+        where: {
+          clientId: assignment.clientId,
+          day: assignment.day,
+          block: assignment.block,
+          status: 'pending'
+        }
+      });
+      
+      for (const reassignment of reassignments) {
+        await prisma.reassignmentNeeded.update({
+          where: { id: reassignment.id },
+          data: {
+            status: 'planned',
+            plannedStaffId: plannedAssignment.staffId,
+            plannedDate: plannedAssignment.version.startDate
+          }
+        });
+      }
+    }
+    
+  } catch (error) {
+    console.error('Failed to check reassignments:', error);
+    // Don't throw error here to avoid breaking the main operation
+  }
+};
+
 // Assignment routes
 app.get('/api/assignments', async (req, res) => {
   try {
@@ -385,6 +467,9 @@ app.post('/api/assignments', async (req, res) => {
     // Create change log entry for main schedule changes
     await createChangeLogEntry('assignment_added', version, assignment);
     
+    // Check if this assignment resolves any pending reassignments
+    await checkAndUpdateReassignments(assignment);
+    
     res.status(201).json(assignment);
   } catch (error) {
     console.error('Error creating assignment:', error);
@@ -475,13 +560,15 @@ app.put('/api/assignments/:id', async (req, res) => {
 app.delete('/api/assignments/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const { needsReassignment } = req.query;
     
     // Get assignment before deleting for change log
     const assignmentToDelete = await prisma.assignment.findUnique({
       where: { id: parseInt(id) },
       include: {
         staff: true,
-        client: true
+        client: true,
+        version: true
       }
     });
     
@@ -495,6 +582,37 @@ app.delete('/api/assignments/:id', async (req, res) => {
     
     // Create change log entry for main schedule changes
     await createChangeLogEntry('assignment_removed', assignmentToDelete.versionId, assignmentToDelete);
+    
+    // If this was from main schedule and needs reassignment, track it
+    if (assignmentToDelete.version.type === 'main' && needsReassignment === 'true') {
+      // First check if the client already has an assignment at this time
+      const existingAssignment = await prisma.assignment.findFirst({
+        where: {
+          clientId: assignmentToDelete.clientId,
+          day: assignmentToDelete.day,
+          block: assignmentToDelete.block,
+          version: {
+            type: 'main',
+            status: 'active'
+          }
+        }
+      });
+      
+      // Only create reassignment need if no other assignment exists for this client/time
+      if (!existingAssignment) {
+        await prisma.reassignmentNeeded.create({
+          data: {
+            clientId: assignmentToDelete.clientId,
+            originalStaffId: assignmentToDelete.staffId,
+            originalStaffName: assignmentToDelete.staff.name,
+            day: assignmentToDelete.day,
+            block: assignmentToDelete.block,
+            location: assignmentToDelete.client.locations[0] || 'Unknown',
+            deletedBy: req.user?.name || 'system'
+          }
+        });
+      }
+    }
     
     res.status(204).send();
   } catch (error) {
