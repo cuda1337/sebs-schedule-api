@@ -742,7 +742,7 @@ router.post('/import/gusto-csv', async (req, res) => {
           const hoursPerDay = record.hours / record.dates.length;
           
           // Check for existing override for this date and staff (any block)
-          const existingOverride = await prisma.dailyOverride.findFirst({
+          const existingOverrides = await prisma.dailyOverride.findMany({
             where: {
               date: date,
               originalStaffId: staff.id,
@@ -751,37 +751,92 @@ router.post('/import/gusto-csv', async (req, res) => {
             }
           });
           
-          if (existingOverride) {
-            results.duplicates.push({
-              staff: staff.name,
-              date: date.toDateString(),
-              block: 'Full Day'
-            });
-            continue;
+          if (existingOverrides.length > 0) {
+            // Check if we already have overrides for this staff on this day
+            const hasAM = existingOverrides.some(o => o.block === 'AM');
+            const hasPM = existingOverrides.some(o => o.block === 'PM');
+            const hasFullDay = hasAM && hasPM;
+            
+            if (hasFullDay || (hoursPerDay < 8 && hasAM)) {
+              results.duplicates.push({
+                staff: staff.name,
+                date: date.toDateString(),
+                block: hasFullDay ? 'Full Day' : 'AM'
+              });
+              continue;
+            }
           }
           
-          // Create single override per day with actual hours
-          const override = await prisma.dailyOverride.create({
-            data: {
-              date: date,
-              type: 'callout',
-              day: dayOfWeek,
-              block: hoursPerDay >= 8 ? 'Full Day' : (hoursPerDay >= 4 ? 'AM' : 'AM'), // Use descriptive block names
-              originalStaffId: staff.id,
-              reason: `Gusto import: ${record.requestDetails || 'Time off request'} (${hoursPerDay}h)`,
-              hours: hoursPerDay, // Store actual hours
-              createdBy: 'Gusto CSV Import',
-              status: 'active'
-            }
-          });
-          
-          results.successful.push({
-            id: override.id,
-            staff: staff.name,
-            date: date.toDateString(),
-            block: override.block,
-            hours: hoursPerDay
-          });
+          // Create overrides based on hours
+          if (hoursPerDay >= 8) {
+            // Full day - create both AM and PM overrides
+            const amOverride = await prisma.dailyOverride.create({
+              data: {
+                date: date,
+                type: 'callout',
+                day: dayOfWeek,
+                block: 'AM',
+                originalStaffId: staff.id,
+                reason: `Gusto import: ${record.requestDetails || 'Time off request'} (${hoursPerDay}h full day)`,
+                hours: hoursPerDay / 2, // Split hours between AM/PM
+                createdBy: 'Gusto CSV Import',
+                status: 'active'
+              }
+            });
+            
+            const pmOverride = await prisma.dailyOverride.create({
+              data: {
+                date: date,
+                type: 'callout',
+                day: dayOfWeek,
+                block: 'PM',
+                originalStaffId: staff.id,
+                reason: `Gusto import: ${record.requestDetails || 'Time off request'} (${hoursPerDay}h full day)`,
+                hours: hoursPerDay / 2, // Split hours between AM/PM
+                createdBy: 'Gusto CSV Import',
+                status: 'active'
+              }
+            });
+            
+            results.successful.push({
+              id: amOverride.id,
+              staff: staff.name,
+              date: date.toDateString(),
+              block: 'AM',
+              hours: hoursPerDay / 2
+            });
+            
+            results.successful.push({
+              id: pmOverride.id,
+              staff: staff.name,
+              date: date.toDateString(),
+              block: 'PM',
+              hours: hoursPerDay / 2
+            });
+          } else {
+            // Partial day - create single override (default to AM)
+            const override = await prisma.dailyOverride.create({
+              data: {
+                date: date,
+                type: 'callout',
+                day: dayOfWeek,
+                block: 'AM', // Default partial days to AM
+                originalStaffId: staff.id,
+                reason: `Gusto import: ${record.requestDetails || 'Time off request'} (${hoursPerDay}h)`,
+                hours: hoursPerDay,
+                createdBy: 'Gusto CSV Import',
+                status: 'active'
+              }
+            });
+            
+            results.successful.push({
+              id: override.id,
+              staff: staff.name,
+              date: date.toDateString(),
+              block: 'AM',
+              hours: hoursPerDay
+            });
+          }
         }
         
       } catch (error) {
