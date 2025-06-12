@@ -393,7 +393,38 @@ app.get('/api/assignments', async (req, res) => {
         }
       }
     });
-    res.json(assignments);
+    
+    // Calculate staff counts for each client at each time slot
+    const staffCounts = {};
+    for (const assignment of assignments) {
+      const key = `${assignment.clientId}-${assignment.day}-${assignment.block}`;
+      staffCounts[key] = (staffCounts[key] || 0) + 1;
+    }
+    
+    // Add staff count info to each assignment
+    const assignmentsWithStaffCount = assignments.map(assignment => {
+      const key = `${assignment.clientId}-${assignment.day}-${assignment.block}`;
+      const totalStaffForClient = staffCounts[key] || 1;
+      
+      // Find the staff number for this specific assignment
+      const sameClientAssignments = assignments.filter(a => 
+        a.clientId === assignment.clientId && 
+        a.day === assignment.day && 
+        a.block === assignment.block
+      ).sort((a, b) => a.id - b.id);
+      
+      const staffNumber = sameClientAssignments.findIndex(a => a.id === assignment.id) + 1;
+      
+      return {
+        ...assignment,
+        staffCount: {
+          current: staffNumber,
+          total: totalStaffForClient
+        }
+      };
+    });
+    
+    res.json(assignmentsWithStaffCount);
   } catch (error) {
     console.error('Error fetching assignments:', error);
     res.status(500).json({ error: 'Failed to fetch assignments' });
@@ -402,7 +433,7 @@ app.get('/api/assignments', async (req, res) => {
 
 app.post('/api/assignments', async (req, res) => {
   try {
-    const { day, block, staffId, clientId, versionId, isGroup, groupSessionId, plannedDate } = req.body;
+    const { day, block, staffId, clientId, versionId, isGroup, groupSessionId, plannedDate, overrideClientConflict } = req.body;
     
     // Get version or default to main
     let version = versionId ? parseInt(versionId) : null;
@@ -440,10 +471,43 @@ app.post('/api/assignments', async (req, res) => {
       }
     });
     
-    if (existingClientAssignment) {
-      return res.status(400).json({ 
-        error: 'Client already has a staff member assigned at this time' 
+    if (existingClientAssignment && !overrideClientConflict) {
+      // Count existing assignments for this client at this time
+      const clientAssignmentCount = await prisma.assignment.count({
+        where: {
+          versionId: version,
+          day,
+          block,
+          clientId
+        }
       });
+      
+      // Only allow override if client has less than 2 staff assigned
+      if (clientAssignmentCount >= 2) {
+        return res.status(400).json({ 
+          error: 'Client already has the maximum of 2 staff members assigned at this time' 
+        });
+      }
+      
+      return res.status(400).json({ 
+        error: 'Client already has a staff member assigned at this time',
+        requiresOverride: true,
+        existingStaffCount: clientAssignmentCount
+      });
+    }
+    
+    // Check if this is a second staff assignment
+    let isSecondStaffAssignment = false;
+    if (overrideClientConflict) {
+      const clientAssignmentCount = await prisma.assignment.count({
+        where: {
+          versionId: version,
+          day,
+          block,
+          clientId
+        }
+      });
+      isSecondStaffAssignment = clientAssignmentCount > 0;
     }
     
     const assignment = await prisma.assignment.create({
@@ -465,7 +529,8 @@ app.post('/api/assignments', async (req, res) => {
     });
     
     // Create change log entry for main schedule changes
-    await createChangeLogEntry('assignment_added', version, assignment);
+    const changeType = isSecondStaffAssignment ? 'assignment_added_second_staff' : 'assignment_added';
+    await createChangeLogEntry(changeType, version, assignment);
     
     // Check if this assignment resolves any pending reassignments
     await checkAndUpdateReassignments(assignment);
