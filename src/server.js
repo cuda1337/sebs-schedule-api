@@ -1028,6 +1028,7 @@ app.use('/api/webhooks', require('./routes/webhook.routes'));
 app.use('/api', scheduleVersionRoutes);
 app.use('/api', groupSessionRoutes);
 app.use('/api', supervisorRoutes);
+app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }

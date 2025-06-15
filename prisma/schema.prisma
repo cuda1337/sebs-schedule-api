@@ -267,3 +267,37 @@ model ReassignmentNeeded {
   @@index([clientId])
   @@index([deletedAt])
 }
+
+model LunchSchedule {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @db.Date
+  location   String   // Filter by location
+  timePeriod String   @default("12:30-1:00") // Lunch time period
+  
+  groups     LunchGroup[]
+  
+  createdBy  String
+  createdAt  DateTime @default(now())
+  modifiedBy String?
+  modifiedAt DateTime? @updatedAt
+  
+  @@unique([date, location]) // One lunch schedule per date/location
+  @@index([date])
+  @@index([location])
+}
+
+model LunchGroup {
+  id              Int    @id @default(autoincrement())
+  lunchScheduleId Int
+  primaryStaff    String // Can be staff name or ID
+  helpers         Json   @default("[]") // Array of helper names
+  clientIds       Json   @default("[]") // Array of client IDs
+  color           String @default("#3B82F6") // Group color for UI
+  
+  lunchSchedule   LunchSchedule @relation(fields: [lunchScheduleId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([lunchScheduleId])
+}
