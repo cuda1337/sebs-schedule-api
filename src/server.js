@@ -6,6 +6,7 @@ const groupSessionRoutes = require('./routes/groupSession.routes');
 const supervisorRoutes = require('./routes/supervisor.routes');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
+const backupRoutes = require('./routes/backup.routes');
 const { authMiddleware, optionalAuth } = require('./middleware/auth');
 const { initDatabase } = require('./initDatabase');
 
@@ -1029,6 +1030,7 @@ app.use('/api', scheduleVersionRoutes);
 app.use('/api', groupSessionRoutes);
 app.use('/api', supervisorRoutes);
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
+app.use('/api/backup', backupRoutes);
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
