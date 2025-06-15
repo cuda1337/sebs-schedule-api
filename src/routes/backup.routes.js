@@ -119,8 +119,29 @@ router.post('/restore', upload.single('backupFile'), async (req, res) => {
 // Get backup info/status
 router.get('/info', async (req, res) => {
   try {
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
+    console.log('Backup info requested');
+    
+    // Use the prisma instance from the request object
+    const prisma = req.prisma;
+    
+    if (!prisma) {
+      console.log('No prisma instance available, using demo data');
+      return res.json({
+        databaseInfo: {
+          staff: 0,
+          clients: 0,
+          assignments: 0,
+          scheduleVersions: 0,
+          dailyOverrides: 0,
+          changeLogs: 0,
+          lastUpdated: new Date().toISOString()
+        },
+        backupRecommendation: {
+          shouldBackup: false,
+          reason: 'No database connected - demo mode'
+        }
+      });
+    }
     
     // Get counts of all major tables
     const [
@@ -131,13 +152,15 @@ router.get('/info', async (req, res) => {
       overridesCount,
       changeLogsCount
     ] = await Promise.all([
-      prisma.staff.count(),
-      prisma.client.count(),
-      prisma.assignment.count(),
-      prisma.scheduleVersion.count(),
-      prisma.dailyOverride.count(),
-      prisma.changeLog.count()
+      prisma.staff.count().catch(() => 0),
+      prisma.client.count().catch(() => 0),
+      prisma.assignment.count().catch(() => 0),
+      prisma.scheduleVersion.count().catch(() => 0),
+      prisma.dailyOverride.count().catch(() => 0),
+      prisma.changeLog.count().catch(() => 0)
     ]);
+    
+    console.log(`Database counts: ${staffCount} staff, ${clientsCount} clients, ${assignmentsCount} assignments`);
     
     res.json({
       databaseInfo: {
