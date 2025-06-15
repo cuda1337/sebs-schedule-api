@@ -72,8 +72,8 @@ app.use('/api/backup', backupRoutes);
 // User management routes (authentication required)
 app.use('/api/users', userRoutes);
 
-// Temporarily disable authentication to access data after backup testing
-// app.use(authMiddleware);
+// Authentication middleware
+app.use(authMiddleware);
 
 // Import reassignment routes
 const reassignmentRoutes = require('./routes/reassignment.routes');
