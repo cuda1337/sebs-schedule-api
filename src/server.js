@@ -66,6 +66,9 @@ app.get('/health', (req, res) => {
 // Auth routes (no authentication required)
 app.use('/api/auth', authRoutes);
 
+// Backup routes (no authentication required for emergency recovery)
+app.use('/api/backup', backupRoutes);
+
 // User management routes (authentication required)
 app.use('/api/users', userRoutes);
 
@@ -1030,7 +1033,6 @@ app.use('/api', scheduleVersionRoutes);
 app.use('/api', groupSessionRoutes);
 app.use('/api', supervisorRoutes);
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
-app.use('/api/backup', backupRoutes);
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
