@@ -50,15 +50,23 @@ router.get('/export', async (req, res) => {
   try {
     console.log('Backup export requested');
     
-    // For testing, return a simple text file
-    const content = 'SEBS Database Backup Test File\nGenerated: ' + new Date().toISOString();
-    const filename = `SEBS-Test-Backup-${new Date().toISOString().split('T')[0]}.txt`;
+    // Create Excel workbook
+    const workbook = await backupService.exportToExcel();
     
-    res.setHeader('Content-Type', 'text/plain');
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+    const filename = `SEBS-Database-Backup-${timestamp}.xlsx`;
+    
+    // Write to buffer
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    
+    // Set response headers
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.send(content);
+    res.setHeader('Content-Length', buffer.length);
     
-    console.log(`Test backup export successful: ${filename}`);
+    console.log(`Backup export successful: ${filename}`);
+    res.send(buffer);
   } catch (error) {
     console.error('Error exporting backup:', error);
     res.status(500).json({ 
@@ -118,20 +126,62 @@ router.get('/info', async (req, res) => {
   try {
     console.log('Backup info requested');
     
-    // Simple response for testing
+    // Use the prisma instance from the request object
+    const prisma = req.prisma;
+    
+    if (!prisma) {
+      console.log('No prisma instance available, using demo data');
+      return res.json({
+        databaseInfo: {
+          staff: 0,
+          clients: 0,
+          assignments: 0,
+          scheduleVersions: 0,
+          dailyOverrides: 0,
+          changeLogs: 0,
+          lastUpdated: new Date().toISOString()
+        },
+        backupRecommendation: {
+          shouldBackup: false,
+          reason: 'No database connected - demo mode'
+        }
+      });
+    }
+    
+    // Get counts of all major tables
+    const [
+      staffCount,
+      clientsCount,
+      assignmentsCount,
+      versionsCount,
+      overridesCount,
+      changeLogsCount
+    ] = await Promise.all([
+      prisma.staff.count().catch(() => 0),
+      prisma.client.count().catch(() => 0),
+      prisma.assignment.count().catch(() => 0),
+      prisma.scheduleVersion.count().catch(() => 0),
+      prisma.dailyOverride.count().catch(() => 0),
+      prisma.changeLog.count().catch(() => 0)
+    ]);
+    
+    console.log(`Real database counts: ${staffCount} staff, ${clientsCount} clients, ${assignmentsCount} assignments`);
+    
     res.json({
       databaseInfo: {
-        staff: 5,
-        clients: 10,
-        assignments: 25,
-        scheduleVersions: 1,
-        dailyOverrides: 3,
-        changeLogs: 8,
+        staff: staffCount,
+        clients: clientsCount,
+        assignments: assignmentsCount,
+        scheduleVersions: versionsCount,
+        dailyOverrides: overridesCount,
+        changeLogs: changeLogsCount,
         lastUpdated: new Date().toISOString()
       },
       backupRecommendation: {
-        shouldBackup: true,
-        reason: 'Test data - backup system working'
+        shouldBackup: assignmentsCount > 0 || overridesCount > 0,
+        reason: assignmentsCount > 0 
+          ? 'You have active schedule data that should be backed up'
+          : 'Database is ready for backup creation'
       }
     });
   } catch (error) {
