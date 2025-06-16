@@ -375,6 +375,127 @@ router.post('/validate', upload.single('backupFile'), async (req, res) => {
   }
 });
 
+// Simple assignment-only restore from backup
+router.post('/restore-assignments-only', upload.single('backupFile'), async (req, res) => {
+  let filePath = null;
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No backup file provided' });
+    }
+    
+    filePath = req.file.path;
+    console.log('Starting assignments-only restore from:', filePath);
+    
+    // Read Excel file
+    const workbook = XLSX.readFile(filePath);
+    const assignmentData = XLSX.utils.sheet_to_json(workbook.Sheets['Assignments'] || []);
+    const staffData = XLSX.utils.sheet_to_json(workbook.Sheets['Staff'] || []);
+    const clientData = XLSX.utils.sheet_to_json(workbook.Sheets['Clients'] || []);
+    
+    console.log(`Found ${assignmentData.length} assignments, ${staffData.length} staff, ${clientData.length} clients in backup`);
+    
+    if (assignmentData.length === 0) {
+      return res.status(400).json({ error: 'No assignments found in backup file' });
+    }
+    
+    // Get current staff and clients from database
+    const currentStaff = await req.prisma.staff.findMany();
+    const currentClients = await req.prisma.client.findMany();
+    const mainVersion = await req.prisma.scheduleVersion.findFirst({
+      where: { type: 'main', status: 'active' }
+    });
+    
+    if (!mainVersion) {
+      return res.status(400).json({ error: 'No main schedule version found' });
+    }
+    
+    console.log(`Using main version ${mainVersion.id}, found ${currentStaff.length} current staff, ${currentClients.length} current clients`);
+    
+    // Create name-to-ID mappings for current data
+    const staffNameToId = {};
+    currentStaff.forEach(staff => {
+      staffNameToId[staff.name] = staff.id;
+    });
+    
+    const clientNameToId = {};
+    currentClients.forEach(client => {
+      clientNameToId[client.name] = client.id;
+    });
+    
+    // Clear existing assignments
+    await req.prisma.assignment.deleteMany({});
+    console.log('Cleared existing assignments');
+    
+    // Restore assignments one by one (no transaction)
+    let restored = 0;
+    let skipped = 0;
+    
+    for (const assignment of assignmentData) {
+      try {
+        const staffId = staffNameToId[assignment.staffName];
+        const clientId = clientNameToId[assignment.clientName];
+        
+        if (!staffId || !clientId) {
+          console.warn(`Skipping assignment: staff "${assignment.staffName}" or client "${assignment.clientName}" not found`);
+          skipped++;
+          continue;
+        }
+        
+        await req.prisma.assignment.create({
+          data: {
+            staffId: staffId,
+            clientId: clientId,
+            day: assignment.day,
+            block: assignment.block,
+            versionId: mainVersion.id,
+            isGroup: assignment.isGroup || false,
+            createdAt: assignment.createdAt ? new Date(assignment.createdAt) : new Date(),
+            updatedAt: assignment.updatedAt ? new Date(assignment.updatedAt) : new Date()
+          }
+        });
+        
+        restored++;
+        if (restored % 50 === 0) {
+          console.log(`Restored ${restored} assignments...`);
+        }
+        
+      } catch (error) {
+        console.error(`Error restoring assignment: ${error.message}`);
+        skipped++;
+      }
+    }
+    
+    console.log(`Assignment restore complete: ${restored} restored, ${skipped} skipped`);
+    
+    res.json({
+      success: true,
+      message: `Successfully restored ${restored} assignments to main schedule`,
+      restored: restored,
+      skipped: skipped,
+      total: assignmentData.length,
+      mainVersionId: mainVersion.id
+    });
+    
+  } catch (error) {
+    console.error('Assignment restore failed:', error);
+    res.status(500).json({ 
+      error: 'Assignment restore failed',
+      details: error.message 
+    });
+  } finally {
+    // Clean up uploaded file
+    if (filePath && fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        console.log('Temporary file cleaned up:', filePath);
+      } catch (cleanupError) {
+        console.error('Error cleaning up file:', cleanupError);
+      }
+    }
+  }
+});
+
 // Simple test restore without transaction
 router.post('/test-assignments', async (req, res) => {
   try {
