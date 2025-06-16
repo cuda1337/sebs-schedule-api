@@ -496,6 +496,138 @@ router.post('/restore-assignments-only', upload.single('backupFile'), async (req
   }
 });
 
+// Enhanced restore with full version integrity
+router.post('/restore-full', upload.single('backupFile'), async (req, res) => {
+  let filePath = null;
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No backup file provided' });
+    }
+    
+    filePath = req.file.path;
+    console.log('=== FULL RESTORE STARTED ===');
+    console.log('Restore file:', filePath);
+    
+    // Validate file exists and is readable
+    if (!fs.existsSync(filePath)) {
+      return res.status(400).json({ error: 'Uploaded file not found' });
+    }
+    
+    // First validate the backup file structure
+    console.log('Validating backup file structure...');
+    const workbook = XLSX.readFile(filePath);
+    const sheetNames = workbook.SheetNames;
+    
+    // Check for essential sheets
+    const essentialSheets = ['Staff', 'Clients', 'Assignments'];
+    const missingEssential = essentialSheets.filter(sheet => !sheetNames.includes(sheet));
+    
+    if (missingEssential.length > 0) {
+      return res.status(400).json({
+        error: `Invalid backup file - missing essential sheets: ${missingEssential.join(', ')}`,
+        foundSheets: sheetNames,
+        note: 'Staff, Clients, and Assignments sheets are required for full restore'
+      });
+    }
+    
+    // Parse and validate sheet data
+    const data = {};
+    sheetNames.forEach(sheetName => {
+      data[sheetName] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    });
+    
+    console.log('Backup validation successful:');
+    console.log(`- Staff: ${data.Staff?.length || 0} records`);
+    console.log(`- Clients: ${data.Clients?.length || 0} records`);
+    console.log(`- Assignments: ${data.Assignments?.length || 0} records`);
+    console.log(`- Schedule Versions: ${data.ScheduleVersions?.length || 0} records`);
+    console.log(`- Group Sessions: ${data.GroupSessions?.length || 0} records`);
+    
+    // Show current database state before restore
+    const currentCounts = await Promise.all([
+      req.prisma.staff.count(),
+      req.prisma.client.count(),
+      req.prisma.assignment.count(),
+      req.prisma.scheduleVersion.count()
+    ]);
+    
+    console.log('Current database state before restore:');
+    console.log(`- Staff: ${currentCounts[0]}, Clients: ${currentCounts[1]}, Assignments: ${currentCounts[2]}, Versions: ${currentCounts[3]}`);
+    
+    // Perform the enhanced restore
+    console.log('Starting enhanced restore with full version integrity...');
+    const result = await backupService.restoreFromExcel(filePath);
+    
+    // Verify restoration results
+    const finalCounts = await Promise.all([
+      req.prisma.staff.count(),
+      req.prisma.client.count(),
+      req.prisma.assignment.count(),
+      req.prisma.scheduleVersion.count()
+    ]);
+    
+    console.log('Final database state after restore:');
+    console.log(`- Staff: ${finalCounts[0]}, Clients: ${finalCounts[1]}, Assignments: ${finalCounts[2]}, Versions: ${finalCounts[3]}`);
+    
+    // Get version distribution of assignments
+    const versionDistribution = {};
+    const assignments = await req.prisma.assignment.findMany({
+      include: { version: { select: { id: true, name: true, type: true } } }
+    });
+    
+    assignments.forEach(assignment => {
+      const versionKey = `${assignment.version.id}: ${assignment.version.name} (${assignment.version.type})`;
+      versionDistribution[versionKey] = (versionDistribution[versionKey] || 0) + 1;
+    });
+    
+    console.log('Assignment distribution by version:');
+    Object.entries(versionDistribution).forEach(([version, count]) => {
+      console.log(`  ${version}: ${count} assignments`);
+    });
+    
+    console.log('=== FULL RESTORE COMPLETED ===');
+    
+    res.json({
+      success: true,
+      message: 'Enhanced database restore completed successfully',
+      beforeRestore: {
+        staff: currentCounts[0],
+        clients: currentCounts[1],
+        assignments: currentCounts[2],
+        scheduleVersions: currentCounts[3]
+      },
+      afterRestore: {
+        staff: finalCounts[0],
+        clients: finalCounts[1],
+        assignments: finalCounts[2],
+        scheduleVersions: finalCounts[3]
+      },
+      versionDistribution,
+      restoreDetails: result
+    });
+    
+  } catch (error) {
+    console.error('=== FULL RESTORE FAILED ===');
+    console.error('Error:', error);
+    res.status(500).json({ 
+      error: 'Enhanced restore failed',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  } finally {
+    // Clean up uploaded file
+    if (filePath && fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        console.log('Temporary file cleaned up:', filePath);
+      } catch (cleanupError) {
+        console.error('Error cleaning up file:', cleanupError);
+      }
+    }
+  }
+});
+
 // Simple test restore without transaction
 router.post('/test-assignments', async (req, res) => {
   try {

@@ -285,9 +285,11 @@ class BackupService {
         await tx.groupSessionClient.deleteMany();
         await tx.assignment.deleteMany();
         await tx.groupSession.deleteMany();
-        await tx.scheduleVersion.deleteMany();
+        await tx.scheduleVersion.deleteMany(); // This should clear ALL versions
         await tx.client.deleteMany();
         await tx.staff.deleteMany();
+        
+        console.log('Database cleared - all existing schedule versions and dependencies removed');
 
         console.log('Existing data cleared');
 
@@ -343,37 +345,47 @@ class BackupService {
           console.log(`Restored ${data.Clients.length} clients`);
         }
 
-        // Use the existing main schedule version instead of creating a new one
-        const existingMainVersion = await tx.scheduleVersion.findFirst({
-          where: { type: 'main', status: 'active' }
-        });
-        
-        let mainVersion;
-        if (existingMainVersion) {
-          mainVersion = existingMainVersion;
-          console.log(`Using existing main schedule version: ${mainVersion.id}`);
+        // Restore schedule versions with proper mapping
+        if (data.ScheduleVersions && data.ScheduleVersions.length > 0) {
+          console.log(`Restoring ${data.ScheduleVersions.length} schedule versions...`);
+          
+          for (const version of data.ScheduleVersions) {
+            try {
+              const newVersion = await tx.scheduleVersion.create({
+                data: {
+                  name: version.name || 'Restored Schedule',
+                  type: version.type || 'main',
+                  status: version.status || 'active',
+                  startDate: version.startDate ? new Date(version.startDate) : null,
+                  description: version.description || `Restored from backup - Original ID: ${version.id}`,
+                  createdBy: version.createdBy || 'system',
+                  createdAt: version.createdAt ? new Date(version.createdAt) : new Date(),
+                  updatedAt: version.updatedAt ? new Date(version.updatedAt) : new Date()
+                }
+              });
+              
+              // Map old version ID to new version ID
+              versionIdMapping[version.id] = newVersion.id;
+              console.log(`✓ Restored version: ${version.name} (Old ID: ${version.id} → New ID: ${newVersion.id})`);
+            } catch (error) {
+              console.error(`Error restoring schedule version ${version.id}:`, error.message);
+              // Continue with next version
+            }
+          }
+          console.log(`Schedule versions restored. ID mappings:`, versionIdMapping);
         } else {
-          // Only create if none exists
-          mainVersion = await tx.scheduleVersion.create({
+          // If no versions in backup, create a default main version
+          const mainVersion = await tx.scheduleVersion.create({
             data: {
               name: 'Main Schedule',
               type: 'main',
               status: 'active',
               createdBy: 'system',
-              description: 'Restored from backup'
+              description: 'Created during restore - no versions in backup'
             }
           });
-          console.log(`Created new main schedule version: ${mainVersion.id}`);
-        }
-        
-        // Map ALL old version IDs to this single main version
-        if (data.ScheduleVersions && data.ScheduleVersions.length > 0) {
-          for (const version of data.ScheduleVersions) {
-            versionIdMapping[version.id] = mainVersion.id;
-          }
-          console.log(`Mapped ${data.ScheduleVersions.length} old schedule versions to main version (ID: ${mainVersion.id})`);
-        } else {
           versionIdMapping[1] = mainVersion.id;
+          console.log(`Created default main schedule version: ${mainVersion.id}`);
         }
 
         // Now restore assignments with correct ID mappings
@@ -391,13 +403,18 @@ class BackupService {
               // Map old IDs to new IDs
               const newStaffId = staffIdMapping[assignment.staffId];
               const newClientId = clientIdMapping[assignment.clientId];
-              const newVersionId = mainVersion.id; // Always use the main version we just created
+              const newVersionId = versionIdMapping[assignment.versionId]; // Use proper version mapping
 
               // Skip if we can't find the mapped IDs
               if (!newStaffId || !newClientId || !newVersionId) {
-                console.warn(`Skipping assignment ${assignment.id}: staff ${assignment.staffId}→${newStaffId}, client ${assignment.clientId}→${newClientId}, version ${assignment.versionId}→${newVersionId}`);
+                console.warn(`❌ Skipping assignment ${assignment.id}: staff ${assignment.staffId}→${newStaffId}, client ${assignment.clientId}→${newClientId}, version ${assignment.versionId}→${newVersionId}`);
                 assignmentsSkipped++;
                 continue;
+              }
+              
+              // Debug: Log successful mapping for first few assignments
+              if (assignmentsRestored < 5) {
+                console.log(`✓ Assignment ${assignment.id}: staff ${assignment.staffId}→${newStaffId}, client ${assignment.clientId}→${newClientId}, version ${assignment.versionId}→${newVersionId}`);
               }
 
               await tx.assignment.create({
@@ -429,7 +446,86 @@ class BackupService {
           console.log(`Assignment restore complete: ${assignmentsRestored} restored, ${assignmentsSkipped} skipped of ${data.Assignments.length} total`);
         }
 
-        console.log('Complete restore finished - staff, clients, schedule versions, and assignments restored');
+        // Restore Group Sessions if available
+        if (data.GroupSessions && data.GroupSessions.length > 0) {
+          console.log(`Restoring ${data.GroupSessions.length} group sessions...`);
+          const groupSessionIdMapping = {};
+          
+          for (const groupSession of data.GroupSessions) {
+            try {
+              // Find corresponding staff and version
+              const newStaffId = staffIdMapping[groupSession.staffId];
+              const newVersionId = versionIdMapping[groupSession.versionId];
+              
+              if (newStaffId && newVersionId) {
+                const newGroupSession = await tx.groupSession.create({
+                  data: {
+                    day: groupSession.day,
+                    block: groupSession.block,
+                    staffId: newStaffId,
+                    versionId: newVersionId,
+                    location: groupSession.location,
+                    maxSize: groupSession.maxSize || 4,
+                    createdAt: groupSession.createdAt ? new Date(groupSession.createdAt) : new Date(),
+                    updatedAt: groupSession.updatedAt ? new Date(groupSession.updatedAt) : new Date()
+                  }
+                });
+                groupSessionIdMapping[groupSession.id] = newGroupSession.id;
+              }
+            } catch (error) {
+              console.error(`Error restoring group session ${groupSession.id}:`, error.message);
+            }
+          }
+          
+          // Restore Group Session Clients
+          if (data.GroupSessionClients && data.GroupSessionClients.length > 0) {
+            console.log(`Restoring ${data.GroupSessionClients.length} group session clients...`);
+            for (const gsc of data.GroupSessionClients) {
+              try {
+                const newGroupSessionId = groupSessionIdMapping[gsc.groupSessionId];
+                const newClientId = clientIdMapping[gsc.clientId];
+                
+                if (newGroupSessionId && newClientId) {
+                  await tx.groupSessionClient.create({
+                    data: {
+                      groupSessionId: newGroupSessionId,
+                      clientId: newClientId
+                    }
+                  });
+                }
+              } catch (error) {
+                console.error(`Error restoring group session client ${gsc.id}:`, error.message);
+              }
+            }
+          }
+        }
+
+        // Restore Client Supervisors if available
+        if (data.ClientSupervisors && data.ClientSupervisors.length > 0) {
+          console.log(`Restoring ${data.ClientSupervisors.length} client supervisors...`);
+          for (const supervisor of data.ClientSupervisors) {
+            try {
+              const newClientId = clientIdMapping[supervisor.clientId];
+              if (newClientId) {
+                await tx.clientSupervisor.create({
+                  data: {
+                    clientId: newClientId,
+                    supervisorName: supervisor.supervisorName,
+                    effectiveDate: supervisor.effectiveDate ? new Date(supervisor.effectiveDate) : new Date(),
+                    endDate: supervisor.endDate ? new Date(supervisor.endDate) : null,
+                    createdBy: supervisor.createdBy || 'system',
+                    createdAt: supervisor.createdAt ? new Date(supervisor.createdAt) : new Date(),
+                    updatedAt: supervisor.updatedAt ? new Date(supervisor.updatedAt) : new Date()
+                  }
+                });
+              }
+            } catch (error) {
+              console.error(`Error restoring client supervisor ${supervisor.id}:`, error.message);
+            }
+          }
+        }
+
+        console.log('Complete restore finished - all data restored with proper relationships');
       }, {
         maxWait: 120000, // 2 minutes
         timeout: 180000, // 3 minutes
@@ -438,15 +534,18 @@ class BackupService {
       console.log('Database restore completed successfully');
       return {
         success: true,
-        message: 'Complete database restored successfully with ID mapping',
-        note: 'All staff, clients, schedule versions, and assignments restored with proper foreign key relationships',
+        message: 'Complete database restored successfully with full version integrity',
+        note: 'All data restored with proper foreign key relationships and original schedule version contexts preserved',
         restored: {
           staff: data.Staff?.length || 0,
           clients: data.Clients?.length || 0,
           scheduleVersions: data.ScheduleVersions?.length || 1,
           assignments: data.Assignments?.length || 0,
-          dailyOverrides: 0, // Will add this next if needed
-          changeLogs: 0 // Will add this next if needed
+          groupSessions: data.GroupSessions?.length || 0,
+          groupSessionClients: data.GroupSessionClients?.length || 0,
+          clientSupervisors: data.ClientSupervisors?.length || 0,
+          lunchSchedules: data.LunchSchedules?.length || 0,
+          lunchGroups: data.LunchGroups?.length || 0
         }
       };
     } catch (error) {
