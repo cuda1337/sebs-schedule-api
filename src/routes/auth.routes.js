@@ -114,4 +114,37 @@ router.post('/change-password', authMiddleware, async (req, res) => {
   }
 });
 
+// TEMPORARY: Reset admin user (for debugging login issues)
+router.post('/reset-admin', async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    
+    // Delete existing admin if any
+    await req.prisma.user.deleteMany({
+      where: { email: 'admin@sebs.com' }
+    });
+    
+    // Create new admin
+    const admin = await req.prisma.user.create({
+      data: {
+        email: 'admin@sebs.com',
+        password: hashedPassword,
+        name: 'Admin User',
+        role: 'admin',
+        isActive: true
+      }
+    });
+    
+    console.log('🔧 Admin user reset successfully');
+    res.json({ 
+      message: 'Admin user reset successfully',
+      email: 'admin@sebs.com',
+      note: 'Use password: admin123'
+    });
+  } catch (error) {
+    console.error('Error resetting admin:', error);
+    res.status(500).json({ error: 'Failed to reset admin user' });
+  }
+});
+
 module.exports = router;
