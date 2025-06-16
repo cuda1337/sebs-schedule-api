@@ -72,6 +72,9 @@ app.use('/api/backup', backupRoutes);
 // User management routes (authentication required)
 app.use('/api/users', userRoutes);
 
+// Webhook routes (BEFORE auth middleware - no authentication required)
+app.use('/api/webhooks', require('./routes/webhook.routes'));
+
 // Authentication middleware
 app.use(authMiddleware);
 
@@ -1026,8 +1029,6 @@ app.get('/api/debug/staff', async (req, res) => {
 });
 
 // Mount schedule version routes
-// Webhook routes
-app.use('/api/webhooks', require('./routes/webhook.routes'));
 
 app.use('/api', scheduleVersionRoutes);
 app.use('/api', groupSessionRoutes);
