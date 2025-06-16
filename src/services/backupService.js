@@ -343,44 +343,27 @@ class BackupService {
           console.log(`Restored ${data.Clients.length} clients`);
         }
 
-        // Restore schedule versions (let database auto-assign IDs)
+        // Create only ONE main schedule version for all assignments
+        const mainVersion = await tx.scheduleVersion.create({
+          data: {
+            name: 'Main Schedule',
+            type: 'main',
+            status: 'active',
+            createdBy: 'system'
+          }
+        });
+        
+        // Map ALL old version IDs to this single main version
         if (data.ScheduleVersions && data.ScheduleVersions.length > 0) {
           for (const version of data.ScheduleVersions) {
-            try {
-              const newVersion = await tx.scheduleVersion.create({
-                data: {
-                  name: version.name,
-                  type: version.type || 'main',
-                  status: version.status || 'active',
-                  startDate: version.effectiveDate ? new Date(version.effectiveDate) : null,
-                  description: version.description || null,
-                  createdBy: version.createdBy || 'system',
-                  createdAt: version.createdAt ? new Date(version.createdAt) : new Date(),
-                  updatedAt: version.updatedAt ? new Date(version.updatedAt) : new Date()
-                }
-              });
-              // Map old ID to new ID
-              versionIdMapping[version.id] = newVersion.id;
-            } catch (error) {
-              console.error(`Error restoring schedule version ${version.name}:`, error.message);
-              // Continue with next version
-            }
+            versionIdMapping[version.id] = mainVersion.id;
           }
-          console.log(`Restored ${data.ScheduleVersions.length} schedule versions`);
+          console.log(`Mapped ${data.ScheduleVersions.length} old schedule versions to single main version (ID: ${mainVersion.id})`);
         } else {
-          // Create default main schedule version if none exists
-          const defaultVersion = await tx.scheduleVersion.create({
-            data: {
-              name: 'Main Schedule',
-              type: 'main',
-              status: 'active',
-              createdBy: 'system'
-            }
-          });
-          // Map to default version (assuming old main version was ID 1)
-          versionIdMapping[1] = defaultVersion.id;
-          console.log('Created default main schedule version');
+          versionIdMapping[1] = mainVersion.id;
         }
+        
+        console.log(`Main schedule version created with ID: ${mainVersion.id}`);
 
         // Now restore assignments with correct ID mappings
         if (data.Assignments && data.Assignments.length > 0) {
@@ -397,7 +380,7 @@ class BackupService {
               // Map old IDs to new IDs
               const newStaffId = staffIdMapping[assignment.staffId];
               const newClientId = clientIdMapping[assignment.clientId];
-              const newVersionId = versionIdMapping[assignment.versionId] || versionIdMapping[1]; // Default to main version
+              const newVersionId = mainVersion.id; // Always use the main version we just created
 
               // Skip if we can't find the mapped IDs
               if (!newStaffId || !newClientId || !newVersionId) {
