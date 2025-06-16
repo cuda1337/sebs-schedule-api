@@ -349,8 +349,16 @@ class BackupService {
             name: 'Main Schedule',
             type: 'main',
             status: 'active',
-            createdBy: 'system'
+            createdBy: 'system',
+            description: 'Restored from backup'
           }
+        });
+        
+        console.log(`Created main schedule version:`, {
+          id: mainVersion.id,
+          name: mainVersion.name,
+          type: mainVersion.type,
+          status: mainVersion.status
         });
         
         // Map ALL old version IDs to this single main version

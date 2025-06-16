@@ -166,9 +166,29 @@ router.get('/status', async (req, res) => {
       take: 5,
       include: {
         staff: { select: { name: true } },
-        client: { select: { name: true } }
+        client: { select: { name: true } },
+        version: { select: { id: true, name: true, type: true, status: true } }
       }
     });
+    
+    // Get all schedule versions
+    const allVersions = await prisma.scheduleVersion.findMany({
+      orderBy: { id: 'asc' }
+    });
+    
+    // Get assignment counts per version
+    const assignmentsByVersion = {};
+    for (const version of allVersions) {
+      const count = await prisma.assignment.count({
+        where: { versionId: version.id }
+      });
+      assignmentsByVersion[version.id] = {
+        name: version.name,
+        type: version.type,
+        status: version.status,
+        assignmentCount: count
+      };
+    }
     
     res.json({
       databaseState: {
@@ -179,13 +199,16 @@ router.get('/status', async (req, res) => {
         dailyOverrides: overridesCount,
         lastChecked: new Date().toISOString()
       },
+      scheduleVersions: allVersions,
+      assignmentsByVersion: assignmentsByVersion,
       sampleAssignments: sampleAssignments.map(a => ({
         id: a.id,
         staffName: a.staff.name,
         clientName: a.client.name,
         day: a.day,
         block: a.block,
-        versionId: a.versionId
+        versionId: a.versionId,
+        version: a.version
       }))
     });
   } catch (error) {
