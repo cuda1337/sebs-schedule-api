@@ -260,13 +260,15 @@ class BackupService {
         data[sheetName] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
       });
 
-      // Validate required sheets
-      const requiredSheets = ['Staff', 'Clients', 'Assignments', 'ScheduleVersions'];
-      for (const sheet of requiredSheets) {
+      // Validate essential sheets only
+      const essentialSheets = ['Staff', 'Clients'];
+      for (const sheet of essentialSheets) {
         if (!data[sheet]) {
-          throw new Error(`Required sheet '${sheet}' not found in backup file`);
+          throw new Error(`Essential sheet '${sheet}' not found in backup file`);
         }
       }
+      
+      console.log('Found backup sheets:', Object.keys(data));
 
       console.log('Starting database restore transaction...');
 

@@ -98,16 +98,19 @@ router.post('/restore', upload.single('backupFile'), async (req, res) => {
     const workbook = XLSX.readFile(filePath);
     const sheetNames = workbook.SheetNames;
     
-    // Check for required sheets
-    const requiredSheets = ['Staff', 'Clients', 'Assignments', 'ScheduleVersions'];
-    const missingSheets = requiredSheets.filter(sheet => !sheetNames.includes(sheet));
+    // Check for essential sheets (more flexible for older backups)
+    const essentialSheets = ['Staff', 'Clients'];
+    const missingEssential = essentialSheets.filter(sheet => !sheetNames.includes(sheet));
     
-    if (missingSheets.length > 0) {
+    if (missingEssential.length > 0) {
       return res.status(400).json({
-        error: `Invalid backup file - missing required sheets: ${missingSheets.join(', ')}`,
-        foundSheets: sheetNames
+        error: `Invalid backup file - missing essential sheets: ${missingEssential.join(', ')}`,
+        foundSheets: sheetNames,
+        note: 'At minimum, Staff and Clients sheets are required for restore'
       });
     }
+    
+    console.log('Backup file validated, contains sheets:', sheetNames);
     
     // Perform restore
     const result = await backupService.restoreFromExcel(filePath);
@@ -227,17 +230,21 @@ router.post('/validate', upload.single('backupFile'), async (req, res) => {
     const workbook = XLSX.readFile(filePath);
     const sheetNames = workbook.SheetNames;
     
-    // Check required sheets
-    const requiredSheets = ['Staff', 'Clients', 'Assignments', 'ScheduleVersions'];
-    const missingSheets = requiredSheets.filter(sheet => !sheetNames.includes(sheet));
+    // Check for essential sheets (more flexible for older backups)
+    const essentialSheets = ['Staff', 'Clients'];
+    const missingEssential = essentialSheets.filter(sheet => !sheetNames.includes(sheet));
     
-    if (missingSheets.length > 0) {
+    if (missingEssential.length > 0) {
       return res.status(400).json({
         valid: false,
-        error: `Missing required sheets: ${missingSheets.join(', ')}`,
-        foundSheets: sheetNames
+        error: `Missing essential sheets: ${missingEssential.join(', ')}`,
+        foundSheets: sheetNames,
+        note: 'At minimum, Staff and Clients sheets are required'
       });
     }
+    
+    // Log all sheets found for debugging
+    console.log('Backup file contains sheets:', sheetNames);
     
     // Parse sheet data for validation
     const data = {};
