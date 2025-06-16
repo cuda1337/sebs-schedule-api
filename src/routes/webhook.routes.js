@@ -677,13 +677,42 @@ router.post('/import/gusto-csv', async (req, res) => {
     
     console.log(`🔍 Filtered to ${filteredData.length} records for import`);
     
-    // Match staff names and create overrides
+    // STEP 1: Determine the date range of the import data
+    let importStartDate = null;
+    let importEndDate = null;
+    
+    if (filteredData.length > 0) {
+      const allDates = filteredData.flatMap(record => record.dates || []);
+      if (allDates.length > 0) {
+        importStartDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+        importEndDate = new Date(Math.max(...allDates.map(d => d.getTime())));
+        
+        console.log(`📅 Import date range: ${importStartDate.toDateString()} to ${importEndDate.toDateString()}`);
+        
+        // STEP 2: Delete all existing Gusto entries in this date range
+        const deleteResult = await prisma.dailyOverride.deleteMany({
+          where: {
+            type: 'callout',
+            createdBy: 'Gusto CSV Import',
+            date: {
+              gte: importStartDate,
+              lte: importEndDate
+            }
+          }
+        });
+        
+        console.log(`🗑️ Deleted ${deleteResult.count} existing Gusto entries in date range`);
+      }
+    }
+    
+    // STEP 3: Import the new data fresh (no duplicate checking needed since we cleared the range)
     const results = {
       successful: [],
       errors: [],
       staffNotFound: [],
-      duplicates: [],
-      staffCreated: []
+      duplicates: [], // Will be empty since we cleared existing data
+      staffCreated: [],
+      deletedExisting: importStartDate ? deleteResult.count : 0
     };
     
     for (const record of filteredData) {
@@ -820,31 +849,7 @@ router.post('/import/gusto-csv', async (req, res) => {
           // Calculate hours per day (total hours divided by number of days)
           const hoursPerDay = record.hours / record.dates.length;
           
-          // Check for existing override for this date and staff (any block)
-          const existingOverrides = await prisma.dailyOverride.findMany({
-            where: {
-              date: date,
-              originalStaffId: staff.id,
-              type: 'callout',
-              status: 'active'
-            }
-          });
-          
-          if (existingOverrides.length > 0) {
-            // Check if we already have overrides for this staff on this day
-            const hasAM = existingOverrides.some(o => o.block === 'AM');
-            const hasPM = existingOverrides.some(o => o.block === 'PM');
-            const hasFullDay = hasAM && hasPM;
-            
-            if (hasFullDay || (hoursPerDay < 8 && hasAM)) {
-              results.duplicates.push({
-                staff: staff.name,
-                date: date.toDateString(),
-                block: hasFullDay ? 'Full Day' : 'AM'
-              });
-              continue;
-            }
-          }
+          // NOTE: No duplicate checking needed since we cleared existing Gusto data for this date range
           
           // Create overrides based on hours
           if (hoursPerDay >= 8) {
@@ -949,7 +954,12 @@ router.post('/import/gusto-csv', async (req, res) => {
         errors: results.errors.length,
         staffNotFound: results.staffNotFound.length,
         duplicates: results.duplicates.length,
-        staffCreated: results.staffCreated.length
+        staffCreated: results.staffCreated.length,
+        deletedExisting: results.deletedExisting,
+        dateRange: importStartDate && importEndDate ? {
+          start: importStartDate.toDateString(),
+          end: importEndDate.toDateString()
+        } : null
       }
     });
     
@@ -963,12 +973,12 @@ router.post('/import/gusto-csv', async (req, res) => {
   }
 });
 
-// Parse Gusto CSV format
+// Parse Gusto CSV format with proper multiline support
 function parseGustoCSV(csvData) {
-  const lines = csvData.split('\n');
   const records = [];
   
-  // Find the header line
+  // First, find the header line by scanning for the expected columns
+  const lines = csvData.split('\n');
   let headerIndex = -1;
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].includes('Employee') && lines[i].includes('Status') && lines[i].includes('Request Date')) {
@@ -983,15 +993,23 @@ function parseGustoCSV(csvData) {
   
   // Parse header
   const headerLine = lines[headerIndex];
-  const headers = parseCSVLine(headerLine);
+  const headers = parseCSVRow(headerLine);
+  console.log('📋 CSV Headers:', headers);
   
-  // Parse data rows
-  for (let i = headerIndex + 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line || line.includes('Total approved hours')) continue;
-    
-    const values = parseCSVLine(line);
-    if (values.length < headers.length) continue;
+  // Join all data lines back together (after header) and parse properly
+  const dataLines = lines.slice(headerIndex + 1).join('\n');
+  
+  // Parse the entire data section as proper CSV with multiline support
+  const rows = parseMultilineCSV(dataLines);
+  
+  console.log(`📊 Parsed ${rows.length} total CSV rows`);
+  
+  for (const values of rows) {
+    // Skip rows that don't have enough columns or are summary rows
+    if (values.length < headers.length || 
+        (values[0] && values[0].includes('Total approved hours'))) {
+      continue;
+    }
     
     const record = {};
     headers.forEach((header, index) => {
@@ -1017,11 +1035,69 @@ function parseGustoCSV(csvData) {
     records.push(parsedRecord);
   }
   
+  console.log(`✅ Successfully parsed ${records.length} time-off records`);
   return records;
 }
 
-// Parse CSV line handling quoted values
-function parseCSVLine(line) {
+// Robust CSV parser that handles multiline quoted fields
+function parseMultilineCSV(csvData) {
+  const rows = [];
+  let currentRow = [];
+  let currentField = '';
+  let inQuotes = false;
+  let i = 0;
+  
+  while (i < csvData.length) {
+    const char = csvData[i];
+    
+    if (char === '"') {
+      // Handle quote escaping (double quotes)
+      if (inQuotes && i + 1 < csvData.length && csvData[i + 1] === '"') {
+        currentField += '"';
+        i += 2; // Skip both quotes
+        continue;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      // End of field
+      currentRow.push(currentField.trim());
+      currentField = '';
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      // End of row (only if not inside quotes)
+      if (currentField || currentRow.length > 0) {
+        currentRow.push(currentField.trim());
+        if (currentRow.some(field => field.length > 0)) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        currentField = '';
+      }
+      // Skip \r\n sequences
+      if (char === '\r' && i + 1 < csvData.length && csvData[i + 1] === '\n') {
+        i++;
+      }
+    } else {
+      // Regular character (including newlines inside quotes)
+      currentField += char;
+    }
+    
+    i++;
+  }
+  
+  // Handle last field/row
+  if (currentField || currentRow.length > 0) {
+    currentRow.push(currentField.trim());
+    if (currentRow.some(field => field.length > 0)) {
+      rows.push(currentRow);
+    }
+  }
+  
+  return rows;
+}
+
+// Simple CSV row parser for single-line rows (header parsing)
+function parseCSVRow(line) {
   const result = [];
   let current = '';
   let inQuotes = false;
@@ -1041,6 +1117,11 @@ function parseCSVLine(line) {
   
   result.push(current.trim());
   return result;
+}
+
+// Legacy function kept for compatibility
+function parseCSVLine(line) {
+  return parseCSVRow(line);
 }
 
 // Parse Gusto date range format  
