@@ -385,6 +385,13 @@ class BackupService {
         // Now restore assignments with correct ID mappings
         if (data.Assignments && data.Assignments.length > 0) {
           let assignmentsRestored = 0;
+          let assignmentsSkipped = 0;
+          
+          console.log(`Starting assignment restore: ${data.Assignments.length} assignments to restore`);
+          console.log(`Staff ID mappings available: ${Object.keys(staffIdMapping).length}`);
+          console.log(`Client ID mappings available: ${Object.keys(clientIdMapping).length}`);
+          console.log(`Version ID mappings available: ${Object.keys(versionIdMapping).length}`);
+          
           for (const assignment of data.Assignments) {
             try {
               // Map old IDs to new IDs
@@ -394,7 +401,8 @@ class BackupService {
 
               // Skip if we can't find the mapped IDs
               if (!newStaffId || !newClientId || !newVersionId) {
-                console.warn(`Skipping assignment - missing mappings: staff ${assignment.staffId}→${newStaffId}, client ${assignment.clientId}→${newClientId}, version ${assignment.versionId}→${newVersionId}`);
+                console.warn(`Skipping assignment ${assignment.id}: staff ${assignment.staffId}→${newStaffId}, client ${assignment.clientId}→${newClientId}, version ${assignment.versionId}→${newVersionId}`);
+                assignmentsSkipped++;
                 continue;
               }
 
@@ -413,12 +421,18 @@ class BackupService {
                 }
               });
               assignmentsRestored++;
+              
+              // Log progress every 50 assignments
+              if (assignmentsRestored % 50 === 0) {
+                console.log(`Assignment restore progress: ${assignmentsRestored}/${data.Assignments.length}`);
+              }
             } catch (error) {
-              console.error(`Error restoring assignment:`, error.message);
+              console.error(`Error restoring assignment ${assignment.id}:`, error.message);
+              assignmentsSkipped++;
               // Continue with next assignment
             }
           }
-          console.log(`Restored ${assignmentsRestored} of ${data.Assignments.length} assignments`);
+          console.log(`Assignment restore complete: ${assignmentsRestored} restored, ${assignmentsSkipped} skipped of ${data.Assignments.length} total`);
         }
 
         console.log('Complete restore finished - staff, clients, schedule versions, and assignments restored');
