@@ -734,4 +734,62 @@ router.post('/test-assignments', async (req, res) => {
   }
 });
 
+// Improved restore endpoint without transaction timeouts
+router.post('/restore-improved', upload.single('backupFile'), async (req, res) => {
+  let filePath = null;
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No backup file provided' });
+    }
+    
+    filePath = req.file.path;
+    console.log('=== IMPROVED RESTORE STARTED ===');
+    console.log('Restore file:', filePath);
+    
+    // Use the improved backup service
+    const improvedBackupService = require('../services/improvedBackupService');
+    
+    // Perform the restore
+    const result = await improvedBackupService.restoreFromExcel(filePath);
+    
+    console.log('=== IMPROVED RESTORE COMPLETED ===');
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: result.message,
+        restored: result.restored,
+        skipped: result.skipped,
+        errors: result.errors.length > 0 ? result.errors.slice(0, 10) : [] // Limit errors shown
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.message,
+        errors: result.errors.slice(0, 10)
+      });
+    }
+    
+  } catch (error) {
+    console.error('=== IMPROVED RESTORE FAILED ===');
+    console.error('Error:', error);
+    res.status(500).json({ 
+      error: 'Improved restore failed',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  } finally {
+    // Clean up uploaded file
+    if (filePath && fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        console.log('Temporary file cleaned up:', filePath);
+      } catch (cleanupError) {
+        console.error('Error cleaning up file:', cleanupError);
+      }
+    }
+  }
+});
+
 module.exports = router;
