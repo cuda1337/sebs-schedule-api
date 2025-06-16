@@ -343,35 +343,38 @@ class BackupService {
           console.log(`Restored ${data.Clients.length} clients`);
         }
 
-        // Create only ONE main schedule version for all assignments
-        const mainVersion = await tx.scheduleVersion.create({
-          data: {
-            name: 'Main Schedule',
-            type: 'main',
-            status: 'active',
-            createdBy: 'system',
-            description: 'Restored from backup'
-          }
+        // Use the existing main schedule version instead of creating a new one
+        const existingMainVersion = await tx.scheduleVersion.findFirst({
+          where: { type: 'main', status: 'active' }
         });
         
-        console.log(`Created main schedule version:`, {
-          id: mainVersion.id,
-          name: mainVersion.name,
-          type: mainVersion.type,
-          status: mainVersion.status
-        });
+        let mainVersion;
+        if (existingMainVersion) {
+          mainVersion = existingMainVersion;
+          console.log(`Using existing main schedule version: ${mainVersion.id}`);
+        } else {
+          // Only create if none exists
+          mainVersion = await tx.scheduleVersion.create({
+            data: {
+              name: 'Main Schedule',
+              type: 'main',
+              status: 'active',
+              createdBy: 'system',
+              description: 'Restored from backup'
+            }
+          });
+          console.log(`Created new main schedule version: ${mainVersion.id}`);
+        }
         
         // Map ALL old version IDs to this single main version
         if (data.ScheduleVersions && data.ScheduleVersions.length > 0) {
           for (const version of data.ScheduleVersions) {
             versionIdMapping[version.id] = mainVersion.id;
           }
-          console.log(`Mapped ${data.ScheduleVersions.length} old schedule versions to single main version (ID: ${mainVersion.id})`);
+          console.log(`Mapped ${data.ScheduleVersions.length} old schedule versions to main version (ID: ${mainVersion.id})`);
         } else {
           versionIdMapping[1] = mainVersion.id;
         }
-        
-        console.log(`Main schedule version created with ID: ${mainVersion.id}`);
 
         // Now restore assignments with correct ID mappings
         if (data.Assignments && data.Assignments.length > 0) {
