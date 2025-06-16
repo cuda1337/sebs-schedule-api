@@ -142,6 +142,61 @@ router.post('/restore', upload.single('backupFile'), async (req, res) => {
   }
 });
 
+// Check current database state
+router.get('/status', async (req, res) => {
+  try {
+    const prisma = req.prisma;
+    
+    const [
+      staffCount,
+      clientsCount,
+      assignmentsCount,
+      versionsCount,
+      overridesCount
+    ] = await Promise.all([
+      prisma.staff.count(),
+      prisma.client.count(),
+      prisma.assignment.count(),
+      prisma.scheduleVersion.count(),
+      prisma.dailyOverride.count()
+    ]);
+    
+    // Get some sample assignments
+    const sampleAssignments = await prisma.assignment.findMany({
+      take: 5,
+      include: {
+        staff: { select: { name: true } },
+        client: { select: { name: true } }
+      }
+    });
+    
+    res.json({
+      databaseState: {
+        staff: staffCount,
+        clients: clientsCount,
+        assignments: assignmentsCount,
+        scheduleVersions: versionsCount,
+        dailyOverrides: overridesCount,
+        lastChecked: new Date().toISOString()
+      },
+      sampleAssignments: sampleAssignments.map(a => ({
+        id: a.id,
+        staffName: a.staff.name,
+        clientName: a.client.name,
+        day: a.day,
+        block: a.block,
+        versionId: a.versionId
+      }))
+    });
+  } catch (error) {
+    console.error('Error getting database status:', error);
+    res.status(500).json({ 
+      error: 'Failed to get database status',
+      details: error.message 
+    });
+  }
+});
+
 // Get backup info/status
 router.get('/info', async (req, res) => {
   try {
