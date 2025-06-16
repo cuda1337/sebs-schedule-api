@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "prisma generate && prisma migrate deploy",
+    "build:fresh": "node reset-migrations.js && prisma generate && prisma migrate deploy",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
