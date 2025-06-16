@@ -680,6 +680,7 @@ router.post('/import/gusto-csv', async (req, res) => {
     // STEP 1: Determine the date range of the import data
     let importStartDate = null;
     let importEndDate = null;
+    let deleteResult = { count: 0 }; // Initialize with default value
     
     if (filteredData.length > 0) {
       const allDates = filteredData.flatMap(record => record.dates || []);
@@ -690,7 +691,7 @@ router.post('/import/gusto-csv', async (req, res) => {
         console.log(`📅 Import date range: ${importStartDate.toDateString()} to ${importEndDate.toDateString()}`);
         
         // STEP 2: Delete all existing Gusto entries in this date range
-        const deleteResult = await prisma.dailyOverride.deleteMany({
+        deleteResult = await prisma.dailyOverride.deleteMany({
           where: {
             type: 'callout',
             createdBy: 'Gusto CSV Import',
@@ -712,7 +713,7 @@ router.post('/import/gusto-csv', async (req, res) => {
       staffNotFound: [],
       duplicates: [], // Will be empty since we cleared existing data
       staffCreated: [],
-      deletedExisting: importStartDate ? deleteResult.count : 0
+      deletedExisting: deleteResult.count
     };
     
     for (const record of filteredData) {
