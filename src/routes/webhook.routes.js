@@ -67,36 +67,43 @@ router.post('/teams/client-update', async (req, res) => {
     if (cancellationInfo) {
       console.log('✅ Parsed cancellation:', cancellationInfo);
       
-      // Client ID was already found during parsing
-      const clientId = cancellationInfo.clientId;
+      // Handle both single cancellation and multiple cancellations
+      const cancellations = Array.isArray(cancellationInfo) ? cancellationInfo : [cancellationInfo];
+      const overrides = [];
       
-      // Create daily override for client cancellation
-      const override = await prisma.dailyOverride.create({
-        data: {
-          date: cancellationInfo.date,
-          type: 'cancellation',
-          day: cancellationInfo.day,
-          block: cancellationInfo.block || '',
-          originalClientId: clientId,
-          reason: `Client cancellation via Teams: ${actualMessage}`,
-          createdBy: actualSender || 'teams-webhook',
-        },
-        include: {
-          originalClient: true,
-        }
-      });
+      // Create daily override for each cancellation
+      for (const cancellation of cancellations) {
+        const override = await prisma.dailyOverride.create({
+          data: {
+            date: cancellation.date,
+            type: 'cancellation',
+            day: cancellation.day,
+            block: cancellation.block || '',
+            originalClientId: cancellation.clientId,
+            reason: `Client cancellation via Teams: ${actualMessage}`,
+            createdBy: actualSender || 'teams-webhook',
+          },
+          include: {
+            originalClient: true,
+          }
+        });
 
-      console.log('💾 Created override:', override);
+        overrides.push(override);
+        console.log(`💾 Created override for ${cancellation.clientName} (${cancellation.block}):`, override.id);
+      }
       
       res.json({
         success: true,
-        message: 'Client cancellation processed',
-        override: {
+        message: `${overrides.length} client cancellation(s) processed`,
+        count: overrides.length,
+        overrides: overrides.map(override => ({
           id: override.id,
           clientId: override.originalClientId,
+          clientName: override.originalClient?.name,
           date: override.date,
+          block: override.block,
           reason: override.reason
-        }
+        }))
       });
     } else {
       console.log('❌ Could not parse cancellation from message');
@@ -194,7 +201,7 @@ router.post('/test/echo', (req, res) => {
   });
 });
 
-// Helper function to parse client cancellation messages
+// Helper function to parse client cancellation messages - Enhanced for multiple clients
 function parseClientCancellation(message, allClients) {
   if (!message) return null;
   
@@ -206,46 +213,101 @@ function parseClientCancellation(message, allClients) {
   
   if (!hasCancellation) return null;
 
-  // Try to find client by name (supports both full names and initials format)
-  let foundClient = null;
+  // Find ALL matching clients (support for multiple clients in one message)
+  const foundClients = [];
+  
+  // First pass: Find clients by full name
   for (const client of allClients) {
-    // Check if the client's full name appears in the message (case-insensitive)
     if (lowerMessage.includes(client.name.toLowerCase())) {
-      foundClient = client;
-      break;
+      foundClients.push(client);
+      console.log(`✅ Found client by full name: ${client.name}`);
     }
   }
   
-  // If not found by full name, try to match by initials format (JoSm for John Smith)
-  if (!foundClient) {
+  // Second pass: Find clients by initials (only if no full names found to avoid conflicts)
+  if (foundClients.length === 0) {
+    // Create a map of all possible initials to avoid duplicates
+    const initialsMap = new Map();
+    
     for (const client of allClients) {
       const clientName = client.name.toLowerCase();
       const nameParts = clientName.split(' ');
       
       if (nameParts.length >= 2) {
-        // Create initials: Take first 2 chars of first name + first 2 chars of last name
         const firstName = nameParts[0];
-        const lastName = nameParts[nameParts.length - 1]; // Use last part in case of middle names
+        const lastName = nameParts[nameParts.length - 1];
         
         if (firstName.length >= 2 && lastName.length >= 2) {
           const initials = (firstName.substring(0, 2) + lastName.substring(0, 2)).toLowerCase();
           
-          // Check if these initials appear in the message
-          if (lowerMessage.includes(initials)) {
-            foundClient = client;
-            console.log(`✅ Found client by initials: "${initials}" → ${client.name}`);
-            break;
+          // Store in map to detect conflicts
+          if (!initialsMap.has(initials)) {
+            initialsMap.set(initials, []);
+          }
+          initialsMap.get(initials).push(client);
+        }
+      }
+    }
+    
+    // Look for initials patterns in the message
+    for (const [initials, clients] of initialsMap) {
+      if (lowerMessage.includes(initials)) {
+        if (clients.length === 1) {
+          foundClients.push(clients[0]);
+          console.log(`✅ Found client by initials: "${initials}" → ${clients[0].name}`);
+        } else {
+          console.log(`⚠️ Ambiguous initials "${initials}" matches multiple clients:`, clients.map(c => c.name).join(', '));
+          // For now, take the first match but log the ambiguity
+          foundClients.push(clients[0]);
+          console.log(`📝 Using first match: ${clients[0].name}`);
+        }
+      }
+    }
+  }
+  
+  // Enhanced: Also look for patterns like "IsHa/ZaHa" or "IsHa and ZaHa"
+  const initialsPattern = /([a-z]{4})[\/\s,&and]+([a-z]{4})/gi;
+  const initialsMatches = lowerMessage.match(initialsPattern);
+  if (initialsMatches && foundClients.length === 0) {
+    console.log('🔍 Found potential initials pattern:', initialsMatches);
+    for (const match of initialsMatches) {
+      const parts = match.toLowerCase().split(/[\/\s,&and]+/);
+      for (const part of parts) {
+        if (part.length === 4) {
+          // Look for this 4-character initials pattern
+          for (const client of allClients) {
+            const clientName = client.name.toLowerCase();
+            const nameParts = clientName.split(' ');
+            
+            if (nameParts.length >= 2) {
+              const firstName = nameParts[0];
+              const lastName = nameParts[nameParts.length - 1];
+              
+              if (firstName.length >= 2 && lastName.length >= 2) {
+                const initials = (firstName.substring(0, 2) + lastName.substring(0, 2)).toLowerCase();
+                
+                if (initials === part.trim()) {
+                  if (!foundClients.find(c => c.id === client.id)) {
+                    foundClients.push(client);
+                    console.log(`✅ Found client by pattern initials: "${part}" → ${client.name}`);
+                  }
+                  break;
+                }
+              }
+            }
           }
         }
       }
     }
   }
   
-  if (!foundClient) {
-    console.log('❌ No client name found in message (tried full names and initials):', message);
+  if (foundClients.length === 0) {
+    console.log('❌ No client names found in message (tried full names and initials):', message);
     console.log('📝 Available clients:', allClients.map(c => c.name).join(', '));
     return null;
   }
+  
+  console.log(`📋 Found ${foundClients.length} client(s):`, foundClients.map(c => c.name).join(', '));
 
   // Try to extract date - look for "today", "tomorrow", specific dates
   // Use Eastern timezone for date calculations
@@ -313,26 +375,43 @@ function parseClientCancellation(message, allClients) {
     }
   }
 
-  // Try to extract time block (AM/PM)
-  let block = null;
+  // Try to extract time block (AM/PM) - Enhanced logic
+  let blocks = [];
   if (lowerMessage.includes('afternoon') || lowerMessage.includes('pm')) {
-    block = 'PM';
+    blocks = ['PM'];
   } else if (lowerMessage.includes('morning') || lowerMessage.includes('am')) {
-    block = 'AM';
+    blocks = ['AM'];
+  } else if (lowerMessage.includes('all day') || lowerMessage.includes('full day')) {
+    blocks = ['AM', 'PM'];
   } else {
-    // Default to AM if no time specified
-    block = 'AM';
+    // Default to both AM and PM if no specific time mentioned
+    // This addresses the issue where cancellations should affect both time slots
+    blocks = ['AM', 'PM'];
+    console.log('⚠️ No specific time mentioned, defaulting to both AM and PM');
   }
 
-  // Return the parsed info with the found client
-  return {
-    clientName: foundClient.name,
-    clientId: foundClient.id,
-    date: targetDate,
-    day: dayOfWeek,
-    block,
-    originalMessage: message
-  };
+  // Return array of cancellation info for each client and time block combination
+  const cancellations = [];
+  for (const client of foundClients) {
+    for (const block of blocks) {
+      cancellations.push({
+        clientName: client.name,
+        clientId: client.id,
+        date: targetDate,
+        day: dayOfWeek,
+        block,
+        originalMessage: message
+      });
+    }
+  }
+
+  // For backward compatibility, return single object if only one cancellation
+  if (cancellations.length === 1) {
+    return cancellations[0];
+  }
+  
+  // Return multiple cancellations
+  return cancellations;
 }
 
 // Gusto webhook endpoint for staff time-off requests
