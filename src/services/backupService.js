@@ -272,7 +272,7 @@ class BackupService {
 
       console.log('Starting database restore transaction...');
 
-      // Use transaction for data integrity
+      // Use transaction for data integrity with longer timeout
       await prisma.$transaction(async (tx) => {
         // Clear existing data (in reverse dependency order)
         // DON'T delete Users - preserve admin account
@@ -427,6 +427,9 @@ class BackupService {
         }
 
         console.log('Complete restore finished - staff, clients, schedule versions, and assignments restored');
+      }, {
+        maxWait: 120000, // 2 minutes
+        timeout: 180000, // 3 minutes
       });
 
       console.log('Database restore completed successfully');

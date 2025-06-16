@@ -113,7 +113,9 @@ router.post('/restore', upload.single('backupFile'), async (req, res) => {
     console.log('Backup file validated, contains sheets:', sheetNames);
     
     // Perform restore
+    console.log('Starting backup restore...');
     const result = await backupService.restoreFromExcel(filePath);
+    console.log('Backup restore completed:', result);
     
     console.log('Restore completed successfully');
     res.json({

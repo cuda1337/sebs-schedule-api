@@ -1028,6 +1028,9 @@ app.get('/api/debug/staff', async (req, res) => {
   }
 });
 
+// Mount test routes for debugging
+app.use('/api/test', require('./routes/test-restore'));
+
 // Mount schedule version routes
 
 app.use('/api', scheduleVersionRoutes);
