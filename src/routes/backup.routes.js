@@ -375,4 +375,110 @@ router.post('/validate', upload.single('backupFile'), async (req, res) => {
   }
 });
 
+// Simple test restore without transaction
+router.post('/test-assignments', async (req, res) => {
+  try {
+    console.log('Starting assignment creation test...');
+    
+    // Step 1: Check if we have staff and clients
+    const staffCount = await req.prisma.staff.count();
+    const clientCount = await req.prisma.client.count();
+    const versionCount = await req.prisma.scheduleVersion.count();
+    
+    console.log(`Current data: ${staffCount} staff, ${clientCount} clients, ${versionCount} versions`);
+    
+    if (staffCount === 0 || clientCount === 0) {
+      return res.status(400).json({ error: 'Need staff and clients before creating assignments' });
+    }
+    
+    // Step 2: Get the main schedule version
+    const mainVersion = await req.prisma.scheduleVersion.findFirst({
+      where: { type: 'main', status: 'active' }
+    });
+    
+    if (!mainVersion) {
+      return res.status(400).json({ error: 'No main schedule version found' });
+    }
+    
+    console.log(`Using main version: ${mainVersion.id} (${mainVersion.name})`);
+    
+    // Step 3: Clear existing assignments
+    const deletedCount = await req.prisma.assignment.deleteMany({});
+    console.log(`Deleted ${deletedCount.count} existing assignments`);
+    
+    // Step 4: Create a few test assignments manually
+    const firstStaff = await req.prisma.staff.findFirst();
+    const firstClient = await req.prisma.client.findFirst();
+    
+    if (!firstStaff || !firstClient) {
+      return res.status(400).json({ error: 'Need at least one staff and one client' });
+    }
+    
+    console.log(`Creating test assignments with staff ${firstStaff.id} and client ${firstClient.id}`);
+    
+    // Create test assignments one by one
+    const testAssignments = [];
+    
+    try {
+      const assignment1 = await req.prisma.assignment.create({
+        data: {
+          staffId: firstStaff.id,
+          clientId: firstClient.id,
+          day: 'Monday',
+          block: 'AM',
+          versionId: mainVersion.id,
+          isGroup: false
+        }
+      });
+      testAssignments.push(assignment1);
+      console.log(`Created assignment 1: ${assignment1.id}`);
+      
+      const assignment2 = await req.prisma.assignment.create({
+        data: {
+          staffId: firstStaff.id,
+          clientId: firstClient.id,
+          day: 'Tuesday',
+          block: 'PM',
+          versionId: mainVersion.id,
+          isGroup: false
+        }
+      });
+      testAssignments.push(assignment2);
+      console.log(`Created assignment 2: ${assignment2.id}`);
+      
+    } catch (error) {
+      console.error('Error creating test assignments:', error);
+      return res.status(500).json({ 
+        error: 'Failed to create test assignments',
+        details: error.message 
+      });
+    }
+    
+    // Step 5: Verify assignments were created
+    const finalCount = await req.prisma.assignment.count();
+    console.log(`Final assignment count: ${finalCount}`);
+    
+    res.json({
+      success: true,
+      message: `Created ${testAssignments.length} test assignments`,
+      assignments: testAssignments.map(a => ({
+        id: a.id,
+        staffId: a.staffId,
+        clientId: a.clientId,
+        day: a.day,
+        block: a.block,
+        versionId: a.versionId
+      })),
+      finalCount
+    });
+    
+  } catch (error) {
+    console.error('Assignment creation test failed:', error);
+    res.status(500).json({ 
+      error: 'Assignment creation test failed',
+      details: error.message 
+    });
+  }
+});
+
 module.exports = router;
