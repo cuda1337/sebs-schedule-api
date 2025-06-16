@@ -93,6 +93,22 @@ router.post('/restore', upload.single('backupFile'), async (req, res) => {
       return res.status(400).json({ error: 'Uploaded file not found' });
     }
     
+    // First validate the backup file
+    console.log('Validating backup file structure...');
+    const workbook = XLSX.readFile(filePath);
+    const sheetNames = workbook.SheetNames;
+    
+    // Check for required sheets
+    const requiredSheets = ['Staff', 'Clients', 'Assignments', 'ScheduleVersions'];
+    const missingSheets = requiredSheets.filter(sheet => !sheetNames.includes(sheet));
+    
+    if (missingSheets.length > 0) {
+      return res.status(400).json({
+        error: `Invalid backup file - missing required sheets: ${missingSheets.join(', ')}`,
+        foundSheets: sheetNames
+      });
+    }
+    
     // Perform restore
     const result = await backupService.restoreFromExcel(filePath);
     
@@ -106,7 +122,9 @@ router.post('/restore', upload.single('backupFile'), async (req, res) => {
     console.error('Error restoring backup:', error);
     res.status(500).json({ 
       error: 'Failed to restore backup',
-      details: error.message 
+      details: error.message,
+      // Add more debugging info
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   } finally {
     // Clean up uploaded file

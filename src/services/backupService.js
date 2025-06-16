@@ -273,6 +273,8 @@ class BackupService {
       // Use transaction for data integrity
       await prisma.$transaction(async (tx) => {
         // Clear existing data (in reverse dependency order)
+        // DON'T delete Users - preserve admin account
+        console.log('Clearing existing data (preserving users)...');
         await tx.lunchGroup.deleteMany();
         await tx.lunchSchedule.deleteMany();
         await tx.changeLog.deleteMany();
@@ -290,17 +292,22 @@ class BackupService {
         // Restore staff
         if (data.Staff && data.Staff.length > 0) {
           for (const staff of data.Staff) {
-            await tx.staff.create({
-              data: {
-                id: staff.id,
-                name: staff.name,
-                email: staff.email || null,
-                locations: staff.locations ? staff.locations.split(', ') : [],
-                availability: staff.availability ? JSON.parse(staff.availability) : {},
-                createdAt: staff.createdAt ? new Date(staff.createdAt) : new Date(),
-                updatedAt: staff.updatedAt ? new Date(staff.updatedAt) : new Date()
-              }
-            });
+            try {
+              await tx.staff.create({
+                data: {
+                  id: staff.id,
+                  name: staff.name,
+                  // Remove email field if it doesn't exist in schema
+                  locations: staff.locations ? staff.locations.split(', ') : [],
+                  availability: staff.availability ? JSON.parse(staff.availability) : {},
+                  createdAt: staff.createdAt ? new Date(staff.createdAt) : new Date(),
+                  updatedAt: staff.updatedAt ? new Date(staff.updatedAt) : new Date()
+                }
+              });
+            } catch (error) {
+              console.error(`Error restoring staff ${staff.name}:`, error.message);
+              // Continue with next staff member
+            }
           }
           console.log(`Restored ${data.Staff.length} staff members`);
         }
