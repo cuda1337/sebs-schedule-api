@@ -75,6 +75,46 @@ app.use('/api/users', userRoutes);
 // Webhook routes (BEFORE auth middleware - no authentication required)
 app.use('/api/webhooks', require('./routes/webhook.routes'));
 
+// Manual migration endpoint for emergency database updates (no auth required)
+app.post('/api/admin/migrate-staff-fields', async (req, res) => {
+  try {
+    console.log('🔧 Running manual staff fields migration...');
+    
+    // Run the SQL migration directly
+    await prisma.$executeRaw`
+      DO $$ 
+      BEGIN
+          -- Add role column if it doesn't exist
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Staff' AND column_name = 'role') THEN
+              ALTER TABLE "Staff" ADD COLUMN "role" TEXT;
+              RAISE NOTICE 'Added role column';
+          END IF;
+          
+          -- Add testDate column if it doesn't exist
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Staff' AND column_name = 'testDate') THEN
+              ALTER TABLE "Staff" ADD COLUMN "testDate" TEXT;
+              RAISE NOTICE 'Added testDate column';
+          END IF;
+          
+          -- Add active column if it doesn't exist
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Staff' AND column_name = 'active') THEN
+              ALTER TABLE "Staff" ADD COLUMN "active" BOOLEAN NOT NULL DEFAULT true;
+              RAISE NOTICE 'Added active column';
+          END IF;
+      END $$;
+    `;
+    
+    // Update existing records to have default role
+    await prisma.$executeRaw`UPDATE "Staff" SET "role" = 'RBT' WHERE "role" IS NULL;`;
+    
+    console.log('✅ Staff fields migration completed successfully');
+    res.json({ success: true, message: 'Staff table migration completed successfully' });
+  } catch (error) {
+    console.error('❌ Error running migration:', error);
+    res.status(500).json({ error: 'Failed to run migration', details: error.message });
+  }
+});
+
 // Authentication middleware
 app.use(authMiddleware);
 
@@ -193,17 +233,31 @@ app.post('/api/staff', async (req, res) => {
       return res.status(400).json({ error: 'A staff member with this name already exists' });
     }
     
-    const staff = await prisma.staff.create({
-      data: {
-        name,
-        locations,
-        availability: availability || {},
-        role: role || 'RBT',
-        testDate: testDate,
-        active: active !== undefined ? active : true
-      }
-    });
-    res.status(201).json(staff);
+    // Try creating with new fields first
+    try {
+      const staff = await prisma.staff.create({
+        data: {
+          name,
+          locations,
+          availability: availability || {},
+          role: role || 'RBT',
+          testDate: testDate,
+          active: active !== undefined ? active : true
+        }
+      });
+      res.status(201).json(staff);
+    } catch (prismaError) {
+      // If that fails (likely due to missing columns), fall back to legacy fields only
+      console.warn('New fields not available, using legacy create:', prismaError.message);
+      const staff = await prisma.staff.create({
+        data: {
+          name,
+          locations,
+          availability: availability || {}
+        }
+      });
+      res.status(201).json(staff);
+    }
   } catch (error) {
     console.error('Error creating staff:', error);
     res.status(500).json({ error: 'Failed to create staff member' });
@@ -215,18 +269,33 @@ app.put('/api/staff/:id', async (req, res) => {
     const { id } = req.params;
     const { name, locations, availability, role, testDate, active } = req.body;
     
-    const staff = await prisma.staff.update({
-      where: { id: parseInt(id) },
-      data: {
-        ...(name && { name }),
-        ...(locations && { locations }),
-        ...(availability && { availability }),
-        ...(role !== undefined && { role }),
-        ...(testDate !== undefined && { testDate }),
-        ...(active !== undefined && { active })
-      }
-    });
-    res.json(staff);
+    // First, try the full update with new fields
+    try {
+      const staff = await prisma.staff.update({
+        where: { id: parseInt(id) },
+        data: {
+          ...(name && { name }),
+          ...(locations && { locations }),
+          ...(availability && { availability }),
+          ...(role !== undefined && { role }),
+          ...(testDate !== undefined && { testDate }),
+          ...(active !== undefined && { active })
+        }
+      });
+      res.json(staff);
+    } catch (prismaError) {
+      // If that fails (likely due to missing columns), fall back to legacy fields only
+      console.warn('New fields not available, using legacy update:', prismaError.message);
+      const staff = await prisma.staff.update({
+        where: { id: parseInt(id) },
+        data: {
+          ...(name && { name }),
+          ...(locations && { locations }),
+          ...(availability && { availability })
+        }
+      });
+      res.json(staff);
+    }
   } catch (error) {
     console.error('Error updating staff:', error);
     res.status(500).json({ error: 'Failed to update staff member' });
