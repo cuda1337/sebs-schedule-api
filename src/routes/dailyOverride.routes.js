@@ -110,9 +110,9 @@ router.post('/daily-overrides', async (req, res) => {
     }
     
     // Validate type
-    if (!['callout', 'cancellation', 'reassignment'].includes(type)) {
+    if (!['callout', 'cancellation', 'reassignment', 'add_session'].includes(type)) {
       return res.status(400).json({ 
-        error: 'Invalid type. Must be: callout, cancellation, or reassignment' 
+        error: 'Invalid type. Must be: callout, cancellation, reassignment, or add_session' 
       });
     }
     
@@ -123,10 +123,14 @@ router.post('/daily-overrides', async (req, res) => {
     if (type === 'cancellation' && !originalClientId) {
       return res.status(400).json({ error: 'Client ID required for cancellation' });
     }
-    if (type === 'reassignment' && (!originalStaffId || !originalClientId)) {
+    if (type === 'reassignment' && (!originalStaffId && !originalClientId) && (!newStaffId && !newClientId)) {
       return res.status(400).json({ 
-        error: 'Both staff and client IDs required for reassignment' 
+        error: 'Either original assignment or new assignment required for reassignment' 
       });
+    }
+    if (type === 'add_session') {
+      // For add_session, we just need the reason field to contain the names
+      // IDs can be null for custom names
     }
     
     // Create the override
