@@ -75,6 +75,31 @@ app.use('/api/users', userRoutes);
 // Webhook routes (BEFORE auth middleware - no authentication required)
 app.use('/api/webhooks', require('./routes/webhook.routes'));
 
+// Test endpoint to check database schema
+app.get('/api/admin/test-staff-schema', async (req, res) => {
+  try {
+    // Check what columns exist in the Staff table
+    const columns = await prisma.$queryRaw`
+      SELECT column_name, data_type, is_nullable 
+      FROM information_schema.columns 
+      WHERE table_name = 'Staff' 
+      ORDER BY ordinal_position;
+    `;
+    
+    // Try to get first staff record to see what fields are available
+    const sampleStaff = await prisma.staff.findFirst();
+    
+    res.json({ 
+      success: true, 
+      columns: columns,
+      sampleStaff: sampleStaff 
+    });
+  } catch (error) {
+    console.error('❌ Error checking schema:', error);
+    res.status(500).json({ error: 'Failed to check schema', details: error.message });
+  }
+});
+
 // Manual migration endpoint for emergency database updates (no auth required)
 app.post('/api/admin/migrate-staff-fields', async (req, res) => {
   try {
