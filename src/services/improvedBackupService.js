@@ -35,7 +35,7 @@ class ImprovedBackupService {
     };
 
     try {
-      console.log('🚀 Starting improved restore process...');
+      console.log('🚀 Starting improved restore process (v2)...');
       
       // Read Excel file
       const workbook = XLSX.readFile(filePath);
