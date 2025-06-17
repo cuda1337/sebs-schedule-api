@@ -151,11 +151,17 @@ router.post('/daily-overrides', async (req, res) => {
       }
     });
     
-    // Log the change
-    await req.prisma.changeLog.create({
-      data: {
-        versionId: 1, // Daily overrides always log to main version
-        changeType: `daily_override_${type}`,
+    // Find the main schedule version for change log
+    const mainVersion = await req.prisma.scheduleVersion.findFirst({
+      where: { type: 'main', status: 'active' }
+    });
+    
+    // Log the change (only if main version exists)
+    if (mainVersion) {
+      await req.prisma.changeLog.create({
+        data: {
+          versionId: mainVersion.id, // Use actual main version ID
+          changeType: `daily_override_${type}`,
         entityType: 'daily_override',
         entityId: override.id,
         day,
@@ -173,6 +179,7 @@ router.post('/daily-overrides', async (req, res) => {
         notes: `Daily override: ${reason}`
       }
     });
+    }
     
     res.status(201).json(override);
   } catch (error) {
