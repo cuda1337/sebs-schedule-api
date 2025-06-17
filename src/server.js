@@ -140,6 +140,24 @@ app.post('/api/admin/migrate-staff-fields', async (req, res) => {
   }
 });
 
+// Force server restart to regenerate Prisma client
+app.post('/api/admin/restart-server', async (req, res) => {
+  try {
+    console.log('🔄 Server restart requested to regenerate Prisma client...');
+    res.json({ success: true, message: 'Server restarting to apply schema changes...' });
+    
+    // Close database connection and exit process
+    // Render will automatically restart the service
+    setTimeout(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    }, 1000);
+  } catch (error) {
+    console.error('❌ Error restarting server:', error);
+    res.status(500).json({ error: 'Failed to restart server', details: error.message });
+  }
+});
+
 // Authentication middleware
 app.use(authMiddleware);
 
