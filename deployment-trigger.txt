@@ -1,0 +1,2 @@
+Trigger deployment for database migration
+Timestamp: 2025-01-17 Staff role fields migration
