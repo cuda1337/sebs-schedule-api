@@ -269,35 +269,24 @@ app.put('/api/staff/:id', async (req, res) => {
     const { id } = req.params;
     const { name, locations, availability, role, testDate, active } = req.body;
     
-    // First, try the full update with new fields
-    try {
-      const staff = await prisma.staff.update({
-        where: { id: parseInt(id) },
-        data: {
-          ...(name && { name }),
-          ...(locations && { locations }),
-          ...(availability && { availability }),
-          ...(role !== undefined && { role }),
-          ...(testDate !== undefined && { testDate }),
-          ...(active !== undefined && { active })
-        }
-      });
-      res.json(staff);
-    } catch (prismaError) {
-      // If that fails (likely due to missing columns), fall back to legacy fields only
-      console.warn('New fields not available, using legacy update:', prismaError.message);
-      const staff = await prisma.staff.update({
-        where: { id: parseInt(id) },
-        data: {
-          ...(name && { name }),
-          ...(locations && { locations }),
-          ...(availability && { availability })
-        }
-      });
-      res.json(staff);
-    }
+    console.log(`🔄 Updating staff ${id} with data:`, { name, locations, availability, role, testDate, active });
+    
+    const staff = await prisma.staff.update({
+      where: { id: parseInt(id) },
+      data: {
+        ...(name && { name }),
+        ...(locations && { locations }),
+        ...(availability && { availability }),
+        ...(role !== undefined && { role }),
+        ...(testDate !== undefined && { testDate }),
+        ...(active !== undefined && { active })
+      }
+    });
+    
+    console.log(`✅ Staff ${id} updated successfully:`, staff);
+    res.json(staff);
   } catch (error) {
-    console.error('Error updating staff:', error);
+    console.error('❌ Error updating staff:', error);
     res.status(500).json({ error: 'Failed to update staff member' });
   }
 });
