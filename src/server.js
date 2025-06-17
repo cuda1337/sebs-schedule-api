@@ -177,7 +177,7 @@ app.get('/api/staff', async (req, res) => {
 
 app.post('/api/staff', async (req, res) => {
   try {
-    const { name, locations, availability } = req.body;
+    const { name, locations, availability, role, testDate, active } = req.body;
     
     // Check for duplicate name
     const existingStaff = await prisma.staff.findFirst({
@@ -197,7 +197,10 @@ app.post('/api/staff', async (req, res) => {
       data: {
         name,
         locations,
-        availability: availability || {}
+        availability: availability || {},
+        role: role || 'RBT',
+        testDate: testDate,
+        active: active !== undefined ? active : true
       }
     });
     res.status(201).json(staff);
@@ -210,14 +213,17 @@ app.post('/api/staff', async (req, res) => {
 app.put('/api/staff/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, locations, availability } = req.body;
+    const { name, locations, availability, role, testDate, active } = req.body;
     
     const staff = await prisma.staff.update({
       where: { id: parseInt(id) },
       data: {
         ...(name && { name }),
         ...(locations && { locations }),
-        ...(availability && { availability })
+        ...(availability && { availability }),
+        ...(role !== undefined && { role }),
+        ...(testDate !== undefined && { testDate }),
+        ...(active !== undefined && { active })
       }
     });
     res.json(staff);
