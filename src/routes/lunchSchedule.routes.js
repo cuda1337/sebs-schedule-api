@@ -193,13 +193,38 @@ router.get('/available-clients', async (req, res) => {
       distinct: ['clientId'] // Only unique clients
     });
 
-    // Return client data
-    const availableClients = amAssignments.map(assignment => ({
-      id: assignment.clientId,
-      name: assignment.client.name,
-      initials: assignment.client.name.split(' ').map(n => n[0]).join(''),
-      location: assignment.client.locations?.[0] || location
-    }));
+    // Get canceled clients for this date
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+    
+    const canceledClients = await prisma.dailyOverride.findMany({
+      where: {
+        type: 'cancellation',
+        date: {
+          gte: startOfDay,
+          lte: endOfDay
+        },
+        status: 'active'
+      },
+      select: {
+        originalClientId: true
+      }
+    });
+
+    const canceledClientIds = new Set(
+      canceledClients.map(c => c.originalClientId).filter(id => id !== null)
+    );
+
+    // Return client data, excluding canceled clients
+    const availableClients = amAssignments
+      .filter(assignment => !canceledClientIds.has(assignment.clientId))
+      .map(assignment => ({
+        id: assignment.clientId,
+        name: assignment.client.name,
+        initials: assignment.client.name.split(' ').map(n => n[0]).join(''),
+        location: assignment.client.locations?.[0] || location
+      }));
 
     res.json(availableClients);
   } catch (error) {
