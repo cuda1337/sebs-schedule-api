@@ -248,9 +248,10 @@ app.delete('/api/clients/:id', async (req, res) => {
 // Staff routes
 app.get('/api/staff', async (req, res) => {
   try {
-    const staff = await prisma.staff.findMany({
-      orderBy: { name: 'asc' }
-    });
+    // Use raw SQL to get all fields including new ones
+    const staff = await prisma.$queryRaw`
+      SELECT * FROM "Staff" ORDER BY "name" ASC
+    `;
     res.json(staff);
   } catch (error) {
     console.error('Error fetching staff:', error);
@@ -314,20 +315,27 @@ app.put('/api/staff/:id', async (req, res) => {
     
     console.log(`🔄 Updating staff ${id} with data:`, { name, locations, availability, role, testDate, active });
     
-    const staff = await prisma.staff.update({
-      where: { id: parseInt(id) },
-      data: {
-        ...(name && { name }),
-        ...(locations && { locations }),
-        ...(availability && { availability }),
-        ...(role !== undefined && { role }),
-        ...(testDate !== undefined && { testDate }),
-        ...(active !== undefined && { active })
-      }
-    });
+    // Use raw SQL to update with all fields including new ones
+    await prisma.$executeRaw`
+      UPDATE "Staff" 
+      SET 
+        "name" = COALESCE(${name}, "name"),
+        "locations" = COALESCE(${locations}::text[], "locations"),
+        "availability" = COALESCE(${availability}::jsonb, "availability"),
+        "role" = COALESCE(${role}, "role"),
+        "testDate" = COALESCE(${testDate}, "testDate"),
+        "active" = COALESCE(${active}::boolean, "active"),
+        "updatedAt" = NOW()
+      WHERE "id" = ${parseInt(id)}
+    `;
     
-    console.log(`✅ Staff ${id} updated successfully:`, staff);
-    res.json(staff);
+    // Get the updated record using raw SQL to include all fields
+    const staff = await prisma.$queryRaw`
+      SELECT * FROM "Staff" WHERE "id" = ${parseInt(id)}
+    `;
+    
+    console.log(`✅ Staff ${id} updated successfully:`, staff[0]);
+    res.json(staff[0]);
   } catch (error) {
     console.error('❌ Error updating staff:', error);
     res.status(500).json({ error: 'Failed to update staff member' });
