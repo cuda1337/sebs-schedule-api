@@ -90,7 +90,6 @@ class ImprovedBackupService {
             const newStaff = await prisma.staff.create({
               data: {
                 name: staff.name,
-                email: staff.email || null,
                 locations: staff.locations ? staff.locations.split(', ') : [],
                 availability: staff.availability ? JSON.parse(staff.availability) : {}
               }
