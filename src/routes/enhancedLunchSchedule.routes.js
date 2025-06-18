@@ -1,6 +1,9 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 
+// For now, disable override functionality until database migration is applied
+const OVERRIDE_COLUMNS_ENABLED = false;
+
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -13,8 +16,8 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: 'Date and location are required' });
     }
 
-    // Check if override columns exist first
-    const overrideColumnsExist = await checkOverrideColumnsExist();
+    // Override functionality disabled for now
+    const overrideColumnsExist = OVERRIDE_COLUMNS_ENABLED;
 
     const lunchSchedule = await prisma.lunchSchedule.findUnique({
       where: {
@@ -293,17 +296,6 @@ router.post('/:id/modify-after-finalization', async (req, res) => {
     res.status(500).json({ error: 'Failed to track modification' });
   }
 });
-
-// Check if override columns exist in the database
-async function checkOverrideColumnsExist() {
-  try {
-    // Try a simple query to see if override columns exist
-    await prisma.$queryRaw`SELECT "manuallyMovedToAvailable" FROM "LunchSchedule" LIMIT 1`;
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
 
 // Get available clients for lunch (those with AM assignments but not in lunch groups yet)
 router.get('/available-clients', async (req, res) => {
