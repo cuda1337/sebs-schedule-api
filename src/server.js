@@ -81,6 +81,9 @@ app.use('/api/migrate', require('./routes/migrate.routes'));
 // Enhanced lunch schedule routes (BEFORE auth middleware - no authentication required)
 app.use('/api/enhanced-lunch-schedule', require('./routes/enhancedLunchSchedule.routes'));
 
+// Debug lunch schedule routes (BEFORE auth middleware - no authentication required)
+app.use('/api/debug-lunch', require('./routes/debug-lunch.routes'));
+
 // Test endpoint to check database schema
 app.get('/api/admin/test-staff-schema', async (req, res) => {
   try {
