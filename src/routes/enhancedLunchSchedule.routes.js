@@ -13,6 +13,9 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: 'Date and location are required' });
     }
 
+    // Check if override columns exist first
+    const overrideColumnsExist = await checkOverrideColumnsExist();
+
     const lunchSchedule = await prisma.lunchSchedule.findUnique({
       where: {
         date_location: {
@@ -51,19 +54,28 @@ router.get('/', async (req, res) => {
 
     if (!lunchSchedule) {
       // Create default lunch schedule with default time block
-      const newLunchSchedule = await prisma.lunchSchedule.create({
-        data: {
-          date: new Date(date),
-          location: location,
-          createdBy: 'system',
-          timeBlocks: {
-            create: {
-              startTime: '12:30',
-              endTime: '13:00',
-              label: 'Lunch'
-            }
+      let createData = {
+        date: new Date(date),
+        location: location,
+        createdBy: 'system',
+        timeBlocks: {
+          create: {
+            startTime: '12:30',
+            endTime: '13:00',
+            label: 'Lunch'
           }
-        },
+        }
+      };
+
+      // Add override fields if they exist in schema
+      if (overrideColumnsExist) {
+        createData.manuallyMovedToAvailable = [];
+        createData.manualStayWithStaff = [];
+        createData.excludedClients = [];
+      }
+
+      const newLunchSchedule = await prisma.lunchSchedule.create({
+        data: createData,
         include: {
           timeBlocks: {
             include: {
@@ -125,43 +137,49 @@ router.post('/', async (req, res) => {
       }
     });
 
-    // Try to create with override fields first, fallback to without them if schema doesn't support them
-    let lunchSchedule;
+    // Check if override columns exist
+    const overrideColumnsExist = await checkOverrideColumnsExist();
     
-    try {
-      lunchSchedule = await prisma.lunchSchedule.create({
-        data: {
-          date: new Date(date),
-          location: location,
-          createdBy: createdBy,
-          manuallyMovedToAvailable: manuallyMovedToAvailable,
-          manualStayWithStaff: manualStayWithStaff,
-          excludedClients: excludedClients,
-          timeBlocks: {
-            create: timeBlocks.map(timeBlock => ({
-              startTime: timeBlock.startTime,
-              endTime: timeBlock.endTime,
-              label: timeBlock.label,
-              groups: {
-                create: timeBlock.groups.map(group => ({
-                  primaryStaff: group.primaryStaff,
-                  helpers: group.helpers || [],
-                  roomLocation: group.roomLocation,
-                  groupName: group.groupName,
-                  color: group.color || '#3B82F6',
-                  clients: {
-                    create: group.clients.map((client, index) => ({
-                      clientId: client.clientId,
-                      hasAfternoonSession: client.hasAfternoonSession || false,
-                      afternoonSessionNote: client.afternoonSessionNote,
-                      displayOrder: index
-                    }))
-                  }
+    // Prepare data object
+    let createData = {
+      date: new Date(date),
+      location: location,
+      createdBy: createdBy,
+      timeBlocks: {
+        create: timeBlocks.map(timeBlock => ({
+          startTime: timeBlock.startTime,
+          endTime: timeBlock.endTime,
+          label: timeBlock.label,
+          groups: {
+            create: timeBlock.groups.map(group => ({
+              primaryStaff: group.primaryStaff,
+              helpers: group.helpers || [],
+              roomLocation: group.roomLocation,
+              groupName: group.groupName,
+              color: group.color || '#3B82F6',
+              clients: {
+                create: group.clients.map((client, index) => ({
+                  clientId: client.clientId,
+                  hasAfternoonSession: client.hasAfternoonSession || false,
+                  afternoonSessionNote: client.afternoonSessionNote,
+                  displayOrder: index
                 }))
               }
             }))
           }
-        },
+        }))
+      }
+    };
+
+    // Add override fields if they exist in schema
+    if (overrideColumnsExist) {
+      createData.manuallyMovedToAvailable = manuallyMovedToAvailable;
+      createData.manualStayWithStaff = manualStayWithStaff;
+      createData.excludedClients = excludedClients;
+    }
+
+    const lunchSchedule = await prisma.lunchSchedule.create({
+      data: createData,
       include: {
         timeBlocks: {
           include: {
@@ -189,70 +207,7 @@ router.post('/', async (req, res) => {
           }
         }
       }
-      });
-    } catch (schemaError) {
-      // Fallback: create without override fields if they don't exist in schema
-      console.log('Override fields not available in schema, creating without them:', schemaError.message);
-      
-      lunchSchedule = await prisma.lunchSchedule.create({
-        data: {
-          date: new Date(date),
-          location: location,
-          createdBy: createdBy,
-          timeBlocks: {
-            create: timeBlocks.map(timeBlock => ({
-              startTime: timeBlock.startTime,
-              endTime: timeBlock.endTime,
-              label: timeBlock.label,
-              groups: {
-                create: timeBlock.groups.map(group => ({
-                  primaryStaff: group.primaryStaff,
-                  helpers: group.helpers || [],
-                  roomLocation: group.roomLocation,
-                  groupName: group.groupName,
-                  color: group.color || '#3B82F6',
-                  clients: {
-                    create: group.clients.map((client, index) => ({
-                      clientId: client.clientId,
-                      hasAfternoonSession: client.hasAfternoonSession || false,
-                      afternoonSessionNote: client.afternoonSessionNote,
-                      displayOrder: index
-                    }))
-                  }
-                }))
-              }
-            }))
-          }
-        },
-        include: {
-          timeBlocks: {
-            include: {
-              groups: {
-                include: {
-                  clients: {
-                    include: {
-                      client: {
-                        select: {
-                          id: true,
-                          name: true,
-                          locations: true
-                        }
-                      }
-                    },
-                    orderBy: {
-                      displayOrder: 'asc'
-                    }
-                  }
-                }
-              }
-            },
-            orderBy: {
-              startTime: 'asc'
-            }
-          }
-        }
-      });
-    }
+    });
 
     res.json(lunchSchedule);
   } catch (error) {
@@ -339,6 +294,17 @@ router.post('/:id/modify-after-finalization', async (req, res) => {
   }
 });
 
+// Check if override columns exist in the database
+async function checkOverrideColumnsExist() {
+  try {
+    // Try a simple query to see if override columns exist
+    await prisma.$queryRaw`SELECT "manuallyMovedToAvailable" FROM "LunchSchedule" LIMIT 1`;
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 // Get available clients for lunch (those with AM assignments but not in lunch groups yet)
 router.get('/available-clients', async (req, res) => {
   try {
@@ -371,6 +337,9 @@ router.get('/available-clients', async (req, res) => {
       }
     });
 
+    // Check if override columns exist
+    const overrideColumnsExist = await checkOverrideColumnsExist();
+
     // Find clients already in lunch groups for this date/location AND get override data
     const existingLunchSchedule = await prisma.lunchSchedule.findUnique({
       where: {
@@ -395,9 +364,15 @@ router.get('/available-clients', async (req, res) => {
     const clientsInLunchGroups = new Set();
     
     // Extract override data from existing lunch schedule (default to empty arrays if no schedule or fields don't exist)
-    const manuallyMovedToAvailable = existingLunchSchedule?.manuallyMovedToAvailable || [];
-    const manualStayWithStaff = existingLunchSchedule?.manualStayWithStaff || [];
-    const excludedClients = existingLunchSchedule?.excludedClients || [];
+    let manuallyMovedToAvailable = [];
+    let manualStayWithStaff = [];
+    let excludedClients = [];
+    
+    if (overrideColumnsExist && existingLunchSchedule) {
+      manuallyMovedToAvailable = existingLunchSchedule.manuallyMovedToAvailable || [];
+      manualStayWithStaff = existingLunchSchedule.manualStayWithStaff || [];
+      excludedClients = existingLunchSchedule.excludedClients || [];
+    }
     
     if (existingLunchSchedule) {
       existingLunchSchedule.timeBlocks.forEach(timeBlock => {
