@@ -291,7 +291,8 @@ router.get('/available-clients', async (req, res) => {
         }
       },
       include: {
-        client: true
+        client: true,
+        staff: true
       }
     });
 
@@ -327,16 +328,43 @@ router.get('/available-clients', async (req, res) => {
       });
     }
 
-    // Deduplicate clients (in case they have multiple staff assignments)
+    // Deduplicate clients and collect their staff assignments
     const uniqueClientsMap = new Map();
+    const clientStaffMap = new Map(); // Track which staff are assigned to each client
+    
     clientsWithAMAssignments.forEach(assignment => {
       if (!uniqueClientsMap.has(assignment.clientId)) {
         uniqueClientsMap.set(assignment.clientId, assignment.client);
+        clientStaffMap.set(assignment.clientId, []);
       }
+      clientStaffMap.get(assignment.clientId).push(assignment.staff);
     });
+
+    // Check which staff have NO PM assignments at this location on this day
+    const allStaffIds = [...new Set(clientsWithAMAssignments.map(a => a.staffId))];
+    const staffWithNoPM = new Set();
+    
+    for (const staffId of allStaffIds) {
+      const hasPMAssignment = await prisma.assignment.findFirst({
+        where: {
+          staffId: staffId,
+          day: dayOfWeek,
+          block: 'PM',
+          version: {
+            type: 'main'
+          }
+        }
+      });
+      
+      if (!hasPMAssignment) {
+        staffWithNoPM.add(staffId);
+      }
+    }
 
     // Filter out clients already in lunch groups and check for afternoon sessions
     const availableClients = [];
+    const shouldStayWithStaff = []; // Clients who should automatically stay with staff
+    
     for (const [clientId, client] of uniqueClientsMap) {
       if (!clientsInLunchGroups.has(clientId)) {
         // Check if client has PM assignment
@@ -351,16 +379,37 @@ router.get('/available-clients', async (req, res) => {
           }
         });
 
-        availableClients.push({
-          id: client.id,
-          name: client.name,
-          locations: client.locations,
-          hasAfternoonSession: !!hasPMAssignment
-        });
+        const clientStaff = clientStaffMap.get(clientId);
+        
+        // Check if ALL of this client's staff have no PM assignments
+        const allStaffHaveNoPM = clientStaff.every(staff => staffWithNoPM.has(staff.id));
+        
+        if (allStaffHaveNoPM) {
+          // This client should stay with their staff through lunch
+          shouldStayWithStaff.push({
+            id: client.id,
+            name: client.name,
+            locations: client.locations,
+            hasAfternoonSession: !!hasPMAssignment,
+            staff: clientStaff.map(s => ({ id: s.id, name: s.name }))
+          });
+        } else {
+          // Regular available client
+          availableClients.push({
+            id: client.id,
+            name: client.name,
+            locations: client.locations,
+            hasAfternoonSession: !!hasPMAssignment,
+            staff: clientStaff.map(s => ({ id: s.id, name: s.name }))
+          });
+        }
       }
     }
 
-    res.json(availableClients);
+    res.json({
+      availableClients,
+      shouldStayWithStaff
+    });
   } catch (error) {
     console.error('Error fetching available clients:', error);
     res.status(500).json({ error: 'Failed to fetch available clients' });
