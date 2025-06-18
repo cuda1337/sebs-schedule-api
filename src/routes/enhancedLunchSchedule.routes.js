@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: 'Date and location are required' });
     }
 
-    // Try to get lunch schedule with OLD schema (direct groups relation)
+    // Try to get lunch schedule with production schema (timeBlocks relation)
     let lunchSchedule = null;
     try {
       lunchSchedule = await prisma.lunchSchedule.findUnique({
@@ -27,14 +27,18 @@ router.get('/', async (req, res) => {
           }
         },
         include: {
-          groups: true
+          timeBlocks: {
+            include: {
+              groups: true
+            }
+          }
         }
       });
     } catch (error) {
       console.log('No existing lunch schedule found:', error.message);
     }
 
-    // Transform old format to new format for frontend compatibility
+    // Transform production format to frontend format
     if (lunchSchedule) {
       const transformedSchedule = {
         id: lunchSchedule.id,
@@ -42,26 +46,13 @@ router.get('/', async (req, res) => {
         location: lunchSchedule.location,
         isFinalized: lunchSchedule.isFinalized || false,
         finalizedBy: lunchSchedule.finalizedBy,
-        timeBlocks: [
+        timeBlocks: lunchSchedule.timeBlocks || [
           {
-            id: 'lunch-' + lunchSchedule.id,
+            id: 'default-lunch',
             startTime: '12:30',
-            endTime: '13:00', 
+            endTime: '13:00',
             label: 'Lunch',
-            groups: lunchSchedule.groups.map(group => ({
-              id: 'group-' + group.id,
-              primaryStaff: group.primaryStaff || '',
-              helpers: group.helpers || [],
-              roomLocation: group.roomLocation || '',
-              groupName: group.groupName || `Group ${group.id}`,
-              color: group.color || '#3B82F6',
-              clients: group.clientIds ? group.clientIds.map((clientId, index) => ({
-                id: clientId,
-                name: `Client ${clientId}`, // Would need to fetch actual names
-                locations: [location],
-                hasAfternoonSession: false
-              })) : []
-            }))
+            groups: []
           }
         ],
         overrides: {
@@ -115,34 +106,35 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Transform new format to old format for database storage
-    const groups = [];
-    if (timeBlocks && timeBlocks.length > 0) {
-      timeBlocks.forEach(timeBlock => {
-        if (timeBlock.groups) {
-          timeBlock.groups.forEach(group => {
-            groups.push({
-              primaryStaff: group.primaryStaff || '',
-              helpers: group.helpers || [],
-              clientIds: group.clients ? group.clients.map(c => c.id || c.clientId) : [],
-              color: group.color || '#3B82F6',
-              groupName: group.groupName || '',
-              roomLocation: group.roomLocation || ''
-            });
-          });
+    // Transform frontend format to production database format
+    const processedTimeBlocks = timeBlocks || [
+      {
+        startTime: '12:30',
+        endTime: '13:00',
+        label: 'Lunch',
+        groups: []
+      }
+    ];
+
+    // Check if lunch schedule already exists (handle missing override columns)
+    let existingSchedule = null;
+    try {
+      existingSchedule = await prisma.lunchSchedule.findUnique({
+        where: {
+          date_location: {
+            date: new Date(date),
+            location
+          }
         }
       });
-    }
-
-    // Check if lunch schedule already exists
-    const existingSchedule = await prisma.lunchSchedule.findUnique({
-      where: {
-        date_location: {
-          date: new Date(date),
-          location
-        }
+    } catch (error) {
+      if (error.code === 'P2022' && error.meta?.column?.includes('manuallyMoved')) {
+        console.log('Override columns not available in database, continuing without them');
+        existingSchedule = null;
+      } else {
+        throw error;
       }
-    });
+    }
 
     let lunchSchedule;
 
@@ -153,13 +145,30 @@ router.post('/', async (req, res) => {
         data: {
           modifiedBy: createdBy,
           modifiedAt: new Date(),
-          groups: {
-            deleteMany: {}, // Remove all existing groups
-            create: groups
+          timeBlocks: {
+            deleteMany: {}, // Remove all existing time blocks
+            create: processedTimeBlocks.map(tb => ({
+              startTime: tb.startTime,
+              endTime: tb.endTime,
+              label: tb.label,
+              groups: {
+                create: (tb.groups || []).map(group => ({
+                  primaryStaff: group.primaryStaff || '',
+                  helpers: group.helpers || [],
+                  roomLocation: group.roomLocation || '',
+                  groupName: group.groupName || '',
+                  color: group.color || '#3B82F6'
+                }))
+              }
+            }))
           }
         },
         include: {
-          groups: true
+          timeBlocks: {
+            include: {
+              groups: true
+            }
+          }
         }
       });
     } else {
@@ -169,12 +178,29 @@ router.post('/', async (req, res) => {
           date: new Date(date),
           location,
           createdBy: createdBy,
-          groups: {
-            create: groups
+          timeBlocks: {
+            create: processedTimeBlocks.map(tb => ({
+              startTime: tb.startTime,
+              endTime: tb.endTime,
+              label: tb.label,
+              groups: {
+                create: (tb.groups || []).map(group => ({
+                  primaryStaff: group.primaryStaff || '',
+                  helpers: group.helpers || [],
+                  roomLocation: group.roomLocation || '',
+                  groupName: group.groupName || '',
+                  color: group.color || '#3B82F6'
+                }))
+              }
+            }))
           }
         },
         include: {
-          groups: true
+          timeBlocks: {
+            include: {
+              groups: true
+            }
+          }
         }
       });
     }
@@ -186,26 +212,13 @@ router.post('/', async (req, res) => {
       location: lunchSchedule.location,
       isFinalized: lunchSchedule.isFinalized || false,
       finalizedBy: lunchSchedule.finalizedBy,
-      timeBlocks: [
+      timeBlocks: lunchSchedule.timeBlocks || [
         {
-          id: 'lunch-' + lunchSchedule.id,
+          id: 'default-lunch',
           startTime: '12:30',
           endTime: '13:00',
           label: 'Lunch',
-          groups: lunchSchedule.groups.map(group => ({
-            id: 'group-' + group.id,
-            primaryStaff: group.primaryStaff || '',
-            helpers: group.helpers || [],
-            roomLocation: group.roomLocation || '',
-            groupName: group.groupName || `Group ${group.id}`,
-            color: group.color || '#3B82F6',
-            clients: group.clientIds ? group.clientIds.map((clientId, index) => ({
-              id: clientId,
-              name: `Client ${clientId}`,
-              locations: [location],
-              hasAfternoonSession: false
-            })) : []
-          }))
+          groups: []
         }
       ],
       overrides: {
