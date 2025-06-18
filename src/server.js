@@ -87,6 +87,21 @@ app.use('/api/debug-lunch', require('./routes/debug-lunch.routes'));
 // Debug database schema routes (BEFORE auth middleware - no authentication required)
 app.use('/api/debug-database', require('./routes/debug-database.routes'));
 
+// Simple debug endpoint directly in server
+app.get('/api/debug-schema', async (req, res) => {
+  try {
+    const columns = await prisma.$queryRaw`
+      SELECT column_name, data_type, is_nullable
+      FROM information_schema.columns 
+      WHERE table_name = 'LunchSchedule'
+      ORDER BY ordinal_position;
+    `;
+    res.json({ lunchScheduleColumns: columns });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
 // Test endpoint to check database schema
 app.get('/api/admin/test-staff-schema', async (req, res) => {
   try {
