@@ -1,9 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 
-// For now, disable override functionality until database migration is applied
-const OVERRIDE_COLUMNS_ENABLED = false;
-
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -16,37 +13,74 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: 'Date and location are required' });
     }
 
-    // Try to get lunch schedule with production schema (timeBlocks relation)
-    let lunchSchedule = null;
-    try {
-      lunchSchedule = await prisma.lunchSchedule.findUnique({
-        where: {
-          date_location: {
-            date: new Date(date),
-            location: location
-          }
-        },
-        include: {
-          timeBlocks: {
-            include: {
-              groups: true
-            }
-          }
-        }
-      });
-    } catch (error) {
-      console.log('No existing lunch schedule found:', error.message);
+    // Use raw SQL to avoid Prisma schema issues with missing columns
+    const lunchSchedule = await prisma.$queryRaw`
+      SELECT id, date, location, "isFinalized", "finalizedBy", "createdBy", "createdAt"
+      FROM "LunchSchedule" 
+      WHERE date = ${new Date(date)}::date AND location = ${location}
+    `;
+
+    // Get time blocks if they exist
+    let timeBlocks = [];
+    if (lunchSchedule.length > 0) {
+      const scheduleId = lunchSchedule[0].id;
+      
+      try {
+        timeBlocks = await prisma.$queryRaw`
+          SELECT tb.id, tb."startTime", tb."endTime", tb.label,
+                 lg.id as group_id, lg."primaryStaff", lg.helpers, lg."roomLocation", 
+                 lg."groupName", lg.color
+          FROM "LunchTimeBlock" tb
+          LEFT JOIN "LunchGroup" lg ON lg."timeBlockId" = tb.id
+          WHERE tb."lunchScheduleId" = ${scheduleId}
+          ORDER BY tb."startTime", lg.id
+        `;
+      } catch (error) {
+        console.log('TimeBlocks table might not exist, using empty array');
+        timeBlocks = [];
+      }
     }
 
-    // Transform production format to frontend format
-    if (lunchSchedule) {
+    if (lunchSchedule.length > 0) {
+      // Transform the data to frontend format
+      const schedule = lunchSchedule[0];
+      
+      // Group the time blocks and their groups
+      const groupedTimeBlocks = [];
+      const timeBlockMap = new Map();
+      
+      timeBlocks.forEach(row => {
+        if (!timeBlockMap.has(row.id)) {
+          timeBlockMap.set(row.id, {
+            id: row.id.toString(),
+            startTime: row.startTime,
+            endTime: row.endTime,
+            label: row.label || 'Lunch',
+            groups: []
+          });
+          groupedTimeBlocks.push(timeBlockMap.get(row.id));
+        }
+        
+        if (row.group_id) {
+          timeBlockMap.get(row.id).groups.push({
+            id: row.group_id.toString(),
+            primaryStaff: row.primaryStaff || '',
+            helpers: row.helpers || [],
+            roomLocation: row.roomLocation || '',
+            groupName: row.groupName || '',
+            color: row.color || '#3B82F6',
+            clients: [] // Would need separate query for clients
+          });
+        }
+      });
+
       const transformedSchedule = {
-        id: lunchSchedule.id,
-        date: lunchSchedule.date,
-        location: lunchSchedule.location,
-        isFinalized: lunchSchedule.isFinalized || false,
-        finalizedBy: lunchSchedule.finalizedBy,
-        timeBlocks: lunchSchedule.timeBlocks || [
+        id: schedule.id,
+        date: schedule.date,
+        location: schedule.location,
+        isFinalized: schedule.isFinalized || false,
+        finalizedBy: schedule.finalizedBy,
+        timeBlocks: groupedTimeBlocks.length > 0 ? groupedTimeBlocks : [
           {
             id: 'default-lunch',
             startTime: '12:30',
@@ -60,8 +94,8 @@ router.get('/', async (req, res) => {
           manualStayWithStaff: [],
           excludedClients: []
         },
-        createdBy: lunchSchedule.createdBy,
-        createdAt: lunchSchedule.createdAt
+        createdBy: schedule.createdBy,
+        createdAt: schedule.createdAt
       };
       
       return res.json(transformedSchedule);
@@ -106,7 +140,39 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Transform frontend format to production database format
+    // Use raw SQL to avoid Prisma schema issues
+    const existingSchedule = await prisma.$queryRaw`
+      SELECT id FROM "LunchSchedule" 
+      WHERE date = ${new Date(date)}::date AND location = ${location}
+    `;
+
+    let scheduleId;
+
+    if (existingSchedule.length > 0) {
+      // Update existing schedule
+      scheduleId = existingSchedule[0].id;
+      
+      await prisma.$executeRaw`
+        UPDATE "LunchSchedule" 
+        SET "lastModifiedBy" = ${createdBy}, "lastModifiedAt" = NOW()
+        WHERE id = ${scheduleId}
+      `;
+      
+      // Delete existing time blocks (cascade will delete groups)
+      await prisma.$executeRaw`
+        DELETE FROM "LunchTimeBlock" WHERE "lunchScheduleId" = ${scheduleId}
+      `;
+    } else {
+      // Create new schedule
+      const result = await prisma.$queryRaw`
+        INSERT INTO "LunchSchedule" (date, location, "createdBy", "isFinalized")
+        VALUES (${new Date(date)}::date, ${location}, ${createdBy}, false)
+        RETURNING id
+      `;
+      scheduleId = result[0].id;
+    }
+
+    // Create time blocks and groups
     const processedTimeBlocks = timeBlocks || [
       {
         startTime: '12:30',
@@ -116,118 +182,46 @@ router.post('/', async (req, res) => {
       }
     ];
 
-    // Check if lunch schedule already exists (handle missing override columns)
-    let existingSchedule = null;
-    try {
-      existingSchedule = await prisma.lunchSchedule.findUnique({
-        where: {
-          date_location: {
-            date: new Date(date),
-            location
-          }
-        }
-      });
-    } catch (error) {
-      if (error.code === 'P2022' && error.meta?.column?.includes('manuallyMoved')) {
-        console.log('Override columns not available in database, continuing without them');
-        existingSchedule = null;
-      } else {
-        throw error;
+    for (const timeBlock of processedTimeBlocks) {
+      const timeBlockResult = await prisma.$queryRaw`
+        INSERT INTO "LunchTimeBlock" ("lunchScheduleId", "startTime", "endTime", label)
+        VALUES (${scheduleId}, ${timeBlock.startTime}, ${timeBlock.endTime}, ${timeBlock.label || 'Lunch'})
+        RETURNING id
+      `;
+      
+      const timeBlockId = timeBlockResult[0].id;
+      
+      // Create groups for this time block
+      for (const group of (timeBlock.groups || [])) {
+        await prisma.$executeRaw`
+          INSERT INTO "LunchGroup" ("timeBlockId", "primaryStaff", helpers, "roomLocation", "groupName", color)
+          VALUES (${timeBlockId}, ${group.primaryStaff || ''}, ${JSON.stringify(group.helpers || [])}, 
+                  ${group.roomLocation || ''}, ${group.groupName || ''}, ${group.color || '#3B82F6'})
+        `;
       }
     }
 
-    let lunchSchedule;
+    // Fetch the created/updated schedule
+    const updatedSchedule = await prisma.$queryRaw`
+      SELECT id, date, location, "isFinalized", "finalizedBy", "createdBy", "createdAt"
+      FROM "LunchSchedule" 
+      WHERE id = ${scheduleId}
+    `;
 
-    if (existingSchedule) {
-      // Update existing schedule
-      lunchSchedule = await prisma.lunchSchedule.update({
-        where: { id: existingSchedule.id },
-        data: {
-          modifiedBy: createdBy,
-          modifiedAt: new Date(),
-          timeBlocks: {
-            deleteMany: {}, // Remove all existing time blocks
-            create: processedTimeBlocks.map(tb => ({
-              startTime: tb.startTime,
-              endTime: tb.endTime,
-              label: tb.label,
-              groups: {
-                create: (tb.groups || []).map(group => ({
-                  primaryStaff: group.primaryStaff || '',
-                  helpers: group.helpers || [],
-                  roomLocation: group.roomLocation || '',
-                  groupName: group.groupName || '',
-                  color: group.color || '#3B82F6'
-                }))
-              }
-            }))
-          }
-        },
-        include: {
-          timeBlocks: {
-            include: {
-              groups: true
-            }
-          }
-        }
-      });
-    } else {
-      // Create new schedule
-      lunchSchedule = await prisma.lunchSchedule.create({
-        data: {
-          date: new Date(date),
-          location,
-          createdBy: createdBy,
-          timeBlocks: {
-            create: processedTimeBlocks.map(tb => ({
-              startTime: tb.startTime,
-              endTime: tb.endTime,
-              label: tb.label,
-              groups: {
-                create: (tb.groups || []).map(group => ({
-                  primaryStaff: group.primaryStaff || '',
-                  helpers: group.helpers || [],
-                  roomLocation: group.roomLocation || '',
-                  groupName: group.groupName || '',
-                  color: group.color || '#3B82F6'
-                }))
-              }
-            }))
-          }
-        },
-        include: {
-          timeBlocks: {
-            include: {
-              groups: true
-            }
-          }
-        }
-      });
-    }
-
-    // Transform back to frontend format
     const transformedSchedule = {
-      id: lunchSchedule.id,
-      date: lunchSchedule.date,
-      location: lunchSchedule.location,
-      isFinalized: lunchSchedule.isFinalized || false,
-      finalizedBy: lunchSchedule.finalizedBy,
-      timeBlocks: lunchSchedule.timeBlocks || [
-        {
-          id: 'default-lunch',
-          startTime: '12:30',
-          endTime: '13:00',
-          label: 'Lunch',
-          groups: []
-        }
-      ],
+      id: updatedSchedule[0].id,
+      date: updatedSchedule[0].date,
+      location: updatedSchedule[0].location,
+      isFinalized: updatedSchedule[0].isFinalized || false,
+      finalizedBy: updatedSchedule[0].finalizedBy,
+      timeBlocks: processedTimeBlocks,
       overrides: {
         manuallyMovedToAvailable: [],
         manualStayWithStaff: [],
         excludedClients: []
       },
-      createdBy: lunchSchedule.createdBy,
-      createdAt: lunchSchedule.createdAt
+      createdBy: updatedSchedule[0].createdBy,
+      createdAt: updatedSchedule[0].createdAt
     };
 
     res.json(transformedSchedule);
