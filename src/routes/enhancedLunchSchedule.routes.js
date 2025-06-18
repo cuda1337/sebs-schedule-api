@@ -195,7 +195,7 @@ router.post('/', async (req, res) => {
       for (const group of (timeBlock.groups || [])) {
         await prisma.$executeRaw`
           INSERT INTO "LunchGroup" ("timeBlockId", "primaryStaff", helpers, "roomLocation", "groupName", color)
-          VALUES (${timeBlockId}, ${group.primaryStaff || ''}, ${JSON.stringify(group.helpers || [])}, 
+          VALUES (${timeBlockId}, ${group.primaryStaff || ''}, ${group.helpers || []}::text[], 
                   ${group.roomLocation || ''}, ${group.groupName || ''}, ${group.color || '#3B82F6'})
         `;
       }
