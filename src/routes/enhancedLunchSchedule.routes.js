@@ -19,41 +19,52 @@ router.get('/', async (req, res) => {
     // Override functionality disabled for now
     const overrideColumnsExist = OVERRIDE_COLUMNS_ENABLED;
 
-    const lunchSchedule = await prisma.lunchSchedule.findUnique({
-      where: {
-        date_location: {
-          date: new Date(date),
-          location: location
-        }
-      },
-      include: {
-        timeBlocks: {
-          include: {
-            groups: {
-              include: {
-                clients: {
-                  include: {
-                    client: {
-                      select: {
-                        id: true,
-                        name: true,
-                        locations: true
+    let lunchSchedule;
+    try {
+      lunchSchedule = await prisma.lunchSchedule.findUnique({
+        where: {
+          date_location: {
+            date: new Date(date),
+            location: location
+          }
+        },
+        include: {
+          timeBlocks: {
+            include: {
+              groups: {
+                include: {
+                  clients: {
+                    include: {
+                      client: {
+                        select: {
+                          id: true,
+                          name: true,
+                          locations: true
+                        }
                       }
+                    },
+                    orderBy: {
+                      displayOrder: 'asc'
                     }
-                  },
-                  orderBy: {
-                    displayOrder: 'asc'
                   }
                 }
               }
+            },
+            orderBy: {
+              startTime: 'asc'
             }
-          },
-          orderBy: {
-            startTime: 'asc'
           }
         }
+      });
+    } catch (error) {
+      if (error.code === 'P2022' && error.meta?.column?.includes('manuallyMoved')) {
+        // Database doesn't have override columns yet, use simpler query
+        console.log('Override columns not available, using basic schema');
+        lunchSchedule = null;
+      } else {
+        throw error;
       }
-    });
+    }
 
     if (!lunchSchedule) {
       // Create default lunch schedule with default time block
@@ -141,7 +152,7 @@ router.post('/', async (req, res) => {
     });
 
     // Check if override columns exist
-    const overrideColumnsExist = await checkOverrideColumnsExist();
+    const overrideColumnsExist = OVERRIDE_COLUMNS_ENABLED;
     
     // Prepare data object
     let createData = {
@@ -181,9 +192,11 @@ router.post('/', async (req, res) => {
       createData.excludedClients = excludedClients;
     }
 
-    const lunchSchedule = await prisma.lunchSchedule.create({
-      data: createData,
-      include: {
+    let lunchSchedule;
+    try {
+      lunchSchedule = await prisma.lunchSchedule.create({
+        data: createData,
+        include: {
         timeBlocks: {
           include: {
             groups: {
@@ -211,6 +224,73 @@ router.post('/', async (req, res) => {
         }
       }
     });
+    } catch (createError) {
+      if (createError.code === 'P2022' && createError.meta?.column?.includes('manuallyMoved')) {
+        // Database doesn't have override columns, create without them
+        const basicCreateData = {
+          date: new Date(date),
+          location: location,
+          createdBy: createdBy,
+          timeBlocks: {
+            create: timeBlocks.map(timeBlock => ({
+              startTime: timeBlock.startTime,
+              endTime: timeBlock.endTime,
+              label: timeBlock.label,
+              groups: {
+                create: timeBlock.groups.map(group => ({
+                  primaryStaff: group.primaryStaff,
+                  helpers: group.helpers || [],
+                  roomLocation: group.roomLocation,
+                  groupName: group.groupName,
+                  color: group.color || '#3B82F6',
+                  clients: {
+                    create: group.clients.map((client, index) => ({
+                      clientId: client.clientId,
+                      hasAfternoonSession: client.hasAfternoonSession || false,
+                      afternoonSessionNote: client.afternoonSessionNote,
+                      displayOrder: index
+                    }))
+                  }
+                }))
+              }
+            }))
+          }
+        };
+        
+        lunchSchedule = await prisma.lunchSchedule.create({
+          data: basicCreateData,
+          include: {
+            timeBlocks: {
+              include: {
+                groups: {
+                  include: {
+                    clients: {
+                      include: {
+                        client: {
+                          select: {
+                            id: true,
+                            name: true,
+                            locations: true
+                          }
+                        }
+                      },
+                      orderBy: {
+                        displayOrder: 'asc'
+                      }
+                    }
+                  }
+                }
+              },
+              orderBy: {
+                startTime: 'asc'
+              }
+            }
+          }
+        });
+      } else {
+        throw createError;
+      }
+    }
 
     res.json(lunchSchedule);
   } catch (error) {
@@ -330,7 +410,7 @@ router.get('/available-clients', async (req, res) => {
     });
 
     // Check if override columns exist
-    const overrideColumnsExist = await checkOverrideColumnsExist();
+    const overrideColumnsExist = OVERRIDE_COLUMNS_ENABLED;
 
     // Find clients already in lunch groups for this date/location AND get override data
     const existingLunchSchedule = await prisma.lunchSchedule.findUnique({
