@@ -75,6 +75,9 @@ app.use('/api/users', userRoutes);
 // Webhook routes (BEFORE auth middleware - no authentication required)
 app.use('/api/webhooks', require('./routes/webhook.routes'));
 
+// Migration routes (BEFORE auth middleware - no authentication required)
+app.use('/api/migrate', require('./routes/migrate.routes'));
+
 // Test endpoint to check database schema
 app.get('/api/admin/test-staff-schema', async (req, res) => {
   try {
@@ -157,9 +160,6 @@ app.post('/api/admin/restart-server', async (req, res) => {
     res.status(500).json({ error: 'Failed to restart server', details: error.message });
   }
 });
-
-// Migration routes (before auth for easy production access)
-app.use('/api/migrate', require('./routes/migrate.routes'));
 
 // Authentication middleware
 app.use(authMiddleware);
