@@ -158,6 +158,9 @@ app.post('/api/admin/restart-server', async (req, res) => {
   }
 });
 
+// Migration routes (before auth for easy production access)
+app.use('/api/migrate', require('./routes/migrate.routes'));
+
 // Authentication middleware
 app.use(authMiddleware);
 
@@ -1153,7 +1156,6 @@ app.use('/api', groupSessionRoutes);
 app.use('/api', supervisorRoutes);
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
 app.use('/api/enhanced-lunch-schedule', require('./routes/enhancedLunchSchedule.routes'));
-app.use('/api/migrate', require('./routes/migrate.routes'));
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
