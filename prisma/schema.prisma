@@ -287,6 +287,11 @@ model LunchSchedule {
   lastModifiedBy              String?
   lastModifiedAt              DateTime?
   
+  // Manual client override tracking
+  manuallyMovedToAvailable    Int[]    @default([]) // Client IDs manually moved to available (override auto-detection)
+  manualStayWithStaff         Int[]    @default([]) // Client IDs manually set to stay with staff
+  excludedClients             Int[]    @default([]) // Client IDs excluded from lunch entirely
+  
   // Relations
   timeBlocks LunchTimeBlock[]
   

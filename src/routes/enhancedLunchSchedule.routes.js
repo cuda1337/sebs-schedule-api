@@ -106,11 +106,16 @@ router.get('/', async (req, res) => {
 // Create or update lunch schedule
 router.post('/', async (req, res) => {
   try {
-    const { date, location, timeBlocks, createdBy } = req.body;
+    const { date, location, timeBlocks, createdBy, overrides } = req.body;
     
     if (!date || !location || !timeBlocks || !createdBy) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+    
+    // Extract override data (default to empty arrays if not provided)
+    const manuallyMovedToAvailable = overrides?.manuallyMovedToAvailable || [];
+    const manualStayWithStaff = overrides?.manualStayWithStaff || [];
+    const excludedClients = overrides?.excludedClients || [];
 
     // Delete existing lunch schedule and recreate
     await prisma.lunchSchedule.deleteMany({
@@ -125,6 +130,9 @@ router.post('/', async (req, res) => {
         date: new Date(date),
         location: location,
         createdBy: createdBy,
+        manuallyMovedToAvailable: manuallyMovedToAvailable,
+        manualStayWithStaff: manualStayWithStaff,
+        excludedClients: excludedClients,
         timeBlocks: {
           create: timeBlocks.map(timeBlock => ({
             startTime: timeBlock.startTime,
@@ -296,7 +304,7 @@ router.get('/available-clients', async (req, res) => {
       }
     });
 
-    // Find clients already in lunch groups for this date/location
+    // Find clients already in lunch groups for this date/location AND get override data
     const existingLunchSchedule = await prisma.lunchSchedule.findUnique({
       where: {
         date_location: {
@@ -318,6 +326,12 @@ router.get('/available-clients', async (req, res) => {
     });
 
     const clientsInLunchGroups = new Set();
+    
+    // Extract override data from existing lunch schedule (default to empty arrays if no schedule)
+    const manuallyMovedToAvailable = existingLunchSchedule?.manuallyMovedToAvailable || [];
+    const manualStayWithStaff = existingLunchSchedule?.manualStayWithStaff || [];
+    const excludedClients = existingLunchSchedule?.excludedClients || [];
+    
     if (existingLunchSchedule) {
       existingLunchSchedule.timeBlocks.forEach(timeBlock => {
         timeBlock.groups.forEach(group => {
@@ -367,6 +381,11 @@ router.get('/available-clients', async (req, res) => {
     
     for (const [clientId, client] of uniqueClientsMap) {
       if (!clientsInLunchGroups.has(clientId)) {
+        // Skip excluded clients entirely
+        if (excludedClients.includes(clientId)) {
+          continue;
+        }
+        
         // Check if client has PM assignment
         const hasPMAssignment = await prisma.assignment.findFirst({
           where: {
@@ -381,11 +400,9 @@ router.get('/available-clients', async (req, res) => {
 
         const clientStaff = clientStaffMap.get(clientId);
         
-        // Check if ALL of this client's staff have no PM assignments
-        const allStaffHaveNoPM = clientStaff.every(staff => staffWithNoPM.has(staff.id));
-        
-        if (allStaffHaveNoPM) {
-          // This client should stay with their staff through lunch
+        // Check manual overrides first
+        if (manualStayWithStaff.includes(clientId)) {
+          // Manually set to stay with staff
           shouldStayWithStaff.push({
             id: client.id,
             name: client.name,
@@ -393,8 +410,8 @@ router.get('/available-clients', async (req, res) => {
             hasAfternoonSession: !!hasPMAssignment,
             staff: clientStaff.map(s => ({ id: s.id, name: s.name }))
           });
-        } else {
-          // Regular available client
+        } else if (manuallyMovedToAvailable.includes(clientId)) {
+          // Manually moved to available (override auto-detection)
           availableClients.push({
             id: client.id,
             name: client.name,
@@ -402,13 +419,41 @@ router.get('/available-clients', async (req, res) => {
             hasAfternoonSession: !!hasPMAssignment,
             staff: clientStaff.map(s => ({ id: s.id, name: s.name }))
           });
+        } else {
+          // Check if ALL of this client's staff have no PM assignments (auto-detection)
+          const allStaffHaveNoPM = clientStaff.every(staff => staffWithNoPM.has(staff.id));
+          
+          if (allStaffHaveNoPM) {
+            // This client should automatically stay with their staff through lunch
+            shouldStayWithStaff.push({
+              id: client.id,
+              name: client.name,
+              locations: client.locations,
+              hasAfternoonSession: !!hasPMAssignment,
+              staff: clientStaff.map(s => ({ id: s.id, name: s.name }))
+            });
+          } else {
+            // Regular available client
+            availableClients.push({
+              id: client.id,
+              name: client.name,
+              locations: client.locations,
+              hasAfternoonSession: !!hasPMAssignment,
+              staff: clientStaff.map(s => ({ id: s.id, name: s.name }))
+            });
+          }
         }
       }
     }
 
     res.json({
       availableClients,
-      shouldStayWithStaff
+      shouldStayWithStaff,
+      overrides: {
+        manuallyMovedToAvailable,
+        manualStayWithStaff,
+        excludedClients
+      }
     });
   } catch (error) {
     console.error('Error fetching available clients:', error);
