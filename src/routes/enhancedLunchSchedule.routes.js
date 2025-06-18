@@ -157,7 +157,13 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching lunch schedule:', error);
-    res.status(500).json({ error: 'Failed to fetch lunch schedule' });
+    console.error('Error details:', error.message);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to fetch lunch schedule',
+      details: error.message,
+      query: { date, location }
+    });
   }
 });
 
