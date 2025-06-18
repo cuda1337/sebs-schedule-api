@@ -327,14 +327,22 @@ router.get('/available-clients', async (req, res) => {
       });
     }
 
+    // Deduplicate clients (in case they have multiple staff assignments)
+    const uniqueClientsMap = new Map();
+    clientsWithAMAssignments.forEach(assignment => {
+      if (!uniqueClientsMap.has(assignment.clientId)) {
+        uniqueClientsMap.set(assignment.clientId, assignment.client);
+      }
+    });
+
     // Filter out clients already in lunch groups and check for afternoon sessions
     const availableClients = [];
-    for (const assignment of clientsWithAMAssignments) {
-      if (!clientsInLunchGroups.has(assignment.clientId)) {
+    for (const [clientId, client] of uniqueClientsMap) {
+      if (!clientsInLunchGroups.has(clientId)) {
         // Check if client has PM assignment
         const hasPMAssignment = await prisma.assignment.findFirst({
           where: {
-            clientId: assignment.clientId,
+            clientId: clientId,
             day: dayOfWeek,
             block: 'PM',
             version: {
@@ -344,9 +352,9 @@ router.get('/available-clients', async (req, res) => {
         });
 
         availableClients.push({
-          id: assignment.client.id,
-          name: assignment.client.name,
-          locations: assignment.client.locations,
+          id: client.id,
+          name: client.name,
+          locations: client.locations,
           hasAfternoonSession: !!hasPMAssignment
         });
       }
