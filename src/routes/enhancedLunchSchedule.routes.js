@@ -15,8 +15,7 @@ router.get('/', async (req, res) => {
 
     // Use raw SQL to avoid Prisma schema issues with missing columns
     const lunchSchedule = await prisma.$queryRaw`
-      SELECT id, date, location, "isFinalized", "finalizedBy", "createdBy", "createdAt",
-             "manuallyMovedToAvailable", "manualStayWithStaff", "excludedClients"
+      SELECT id, date, location, "isFinalized", "finalizedBy", "createdBy", "createdAt"
       FROM "LunchSchedule" 
       WHERE date = ${new Date(date)}::date AND location = ${location}
     `;
@@ -121,9 +120,9 @@ router.get('/', async (req, res) => {
           }
         ],
         overrides: {
-          manuallyMovedToAvailable: schedule.manuallyMovedToAvailable || [],
-          manualStayWithStaff: schedule.manualStayWithStaff || [],
-          excludedClients: schedule.excludedClients || []
+          manuallyMovedToAvailable: [],
+          manualStayWithStaff: [],
+          excludedClients: []
         },
         createdBy: schedule.createdBy,
         createdAt: schedule.createdAt
