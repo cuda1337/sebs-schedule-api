@@ -102,6 +102,56 @@ app.get('/api/debug-schema', async (req, res) => {
   }
 });
 
+// Debug endpoint to see saved lunch schedule data
+app.get('/api/debug-lunch-data', async (req, res) => {
+  try {
+    const { date, location } = req.query;
+    
+    // Get lunch schedules
+    let schedules;
+    if (date && location) {
+      schedules = await prisma.$queryRaw`
+        SELECT id, date, location, "isFinalized", "createdBy", "createdAt"
+        FROM "LunchSchedule" 
+        WHERE date = ${new Date(date)}::date AND location = ${location}
+      `;
+    } else {
+      schedules = await prisma.$queryRaw`
+        SELECT id, date, location, "isFinalized", "createdBy", "createdAt"
+        FROM "LunchSchedule" 
+        ORDER BY "createdAt" DESC LIMIT 5
+      `;
+    }
+
+    // Get time blocks for these schedules
+    const timeBlocks = await prisma.$queryRaw`
+      SELECT tb.*, ls.location as schedule_location
+      FROM "LunchTimeBlock" tb
+      JOIN "LunchSchedule" ls ON ls.id = tb."lunchScheduleId"
+      ORDER BY ls."createdAt" DESC, tb."startTime"
+      LIMIT 10
+    `;
+
+    // Get groups for these time blocks  
+    const groups = await prisma.$queryRaw`
+      SELECT lg.*, tb."lunchScheduleId"
+      FROM "LunchGroup" lg
+      JOIN "LunchTimeBlock" tb ON tb.id = lg."timeBlockId"
+      ORDER BY lg."createdAt" DESC
+      LIMIT 10
+    `;
+
+    res.json({
+      schedules,
+      timeBlocks, 
+      groups,
+      query: { date, location }
+    });
+  } catch (error) {
+    res.json({ error: error.message, stack: error.stack });
+  }
+});
+
 // Test endpoint to check database schema
 app.get('/api/admin/test-staff-schema', async (req, res) => {
   try {
