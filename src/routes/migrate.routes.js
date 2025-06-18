@@ -132,6 +132,25 @@ router.post('/lunch-schedule-overhaul', async (req, res) => {
 
     console.log('✅ New lunch schedule schema created successfully');
 
+    // Generate Prisma client to recognize new schema
+    console.log('🔄 Regenerating Prisma client...');
+    const { exec } = require('child_process');
+    try {
+      await new Promise((resolve, reject) => {
+        exec('npx prisma generate', (error, stdout, stderr) => {
+          if (error) {
+            console.error('Warning: Could not regenerate Prisma client:', error.message);
+            resolve(); // Don't fail the migration for this
+          } else {
+            console.log('✅ Prisma client regenerated');
+            resolve();
+          }
+        });
+      });
+    } catch (error) {
+      console.warn('Prisma client regeneration failed, but continuing...', error.message);
+    }
+
     // Verify tables were created
     const verifyTables = await prisma.$queryRaw`
       SELECT table_name 
@@ -192,6 +211,41 @@ router.get('/status', async (req, res) => {
   } catch (error) {
     console.error('Error checking migration status:', error);
     res.status(500).json({ error: 'Failed to check migration status' });
+  }
+});
+
+// Regenerate Prisma client
+router.post('/regenerate-prisma', async (req, res) => {
+  try {
+    console.log('🔄 Regenerating Prisma client...');
+    const { exec } = require('child_process');
+    
+    await new Promise((resolve, reject) => {
+      exec('npx prisma generate', (error, stdout, stderr) => {
+        if (error) {
+          console.error('Error regenerating Prisma client:', error);
+          reject(error);
+        } else {
+          console.log('✅ Prisma client regenerated successfully');
+          console.log(stdout);
+          resolve(stdout);
+        }
+      });
+    });
+
+    res.json({
+      success: true,
+      message: 'Prisma client regenerated successfully. Server restart recommended.',
+      recommendation: 'POST /api/admin/restart-server to apply changes'
+    });
+
+  } catch (error) {
+    console.error('❌ Error regenerating Prisma client:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to regenerate Prisma client',
+      details: error.message
+    });
   }
 });
 
