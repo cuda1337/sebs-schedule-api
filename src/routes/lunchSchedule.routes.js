@@ -15,40 +15,93 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const lunchSchedule = await prisma.lunchSchedule.findUnique({
-      where: {
-        date_location: {
-          date: new Date(date),
-          location
+    let lunchSchedule;
+    try {
+      lunchSchedule = await prisma.lunchSchedule.findUnique({
+        where: {
+          date_location: {
+            date: new Date(date),
+            location
+          }
+        },
+        include: {
+          timeBlocks: {
+            include: {
+              groups: {
+                include: {
+                  clients: {
+                    include: {
+                      client: true
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
-      },
-      include: {
-        groups: true
+      });
+    } catch (error) {
+      // If the new schema doesn't work, try the old schema
+      if (error.message.includes('Unknown field')) {
+        console.log('Using fallback schema without timeBlocks/groups');
+        lunchSchedule = await prisma.lunchSchedule.findUnique({
+          where: {
+            date_location: {
+              date: new Date(date),
+              location
+            }
+          }
+        });
+      } else {
+        throw error;
       }
-    });
+    }
 
     if (!lunchSchedule) {
       return res.json({
         id: null,
         date,
         location,
-        timePeriod: '12:30-1:00',
-        groups: [],
+        isFinalized: false,
+        timeBlocks: [
+          {
+            id: 'default-lunch',
+            startTime: '12:30',
+            endTime: '13:00',
+            label: 'Lunch',
+            groups: []
+          }
+        ],
+        overrides: {
+          manuallyMovedToAvailable: [],
+          manualStayWithStaff: [],
+          excludedClients: []
+        },
         createdBy: null,
-        createdAt: null,
-        modifiedBy: null,
-        modifiedAt: null
+        createdAt: null
       });
     }
 
-    res.json({
+    // Transform the data to match expected frontend format
+    const transformedSchedule = {
       ...lunchSchedule,
-      groups: lunchSchedule.groups.map(group => ({
-        ...group,
-        helpers: Array.isArray(group.helpers) ? group.helpers : [],
-        clientIds: Array.isArray(group.clientIds) ? group.clientIds : []
-      }))
-    });
+      timeBlocks: lunchSchedule.timeBlocks || [
+        {
+          id: 'default-lunch',
+          startTime: '12:30',
+          endTime: '13:00',
+          label: 'Lunch',
+          groups: []
+        }
+      ],
+      overrides: {
+        manuallyMovedToAvailable: [],
+        manualStayWithStaff: [],
+        excludedClients: []
+      }
+    };
+
+    res.json(transformedSchedule);
   } catch (error) {
     console.error('Error fetching lunch schedule:', error);
     res.status(500).json({ error: 'Failed to fetch lunch schedule' });

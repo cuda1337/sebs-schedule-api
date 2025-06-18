@@ -45,6 +45,26 @@ router.get('/', async (req, res) => {
       // Transform the data to frontend format
       const schedule = lunchSchedule[0];
       
+      // Get all clients for all groups in this schedule
+      let groupClients = [];
+      if (timeBlocks.length > 0) {
+        try {
+          groupClients = await prisma.$queryRaw`
+            SELECT lgc.*, c.name as client_name, c.locations as client_locations,
+                   lg.id as group_id
+            FROM "LunchGroupClient" lgc
+            JOIN "Client" c ON c.id = lgc."clientId"
+            JOIN "LunchGroup" lg ON lg.id = lgc."lunchGroupId"
+            JOIN "LunchTimeBlock" tb ON tb.id = lg."timeBlockId"
+            WHERE tb."lunchScheduleId" = ${schedule.id}
+            ORDER BY lgc."displayOrder", lgc."clientId"
+          `;
+        } catch (error) {
+          console.log('Error loading lunch group clients:', error);
+          groupClients = [];
+        }
+      }
+      
       // Group the time blocks and their groups
       const groupedTimeBlocks = [];
       const timeBlockMap = new Map();
@@ -62,6 +82,16 @@ router.get('/', async (req, res) => {
         }
         
         if (row.group_id) {
+          // Get clients for this specific group
+          const groupClientList = groupClients
+            .filter(gc => gc.group_id === row.group_id)
+            .map(gc => ({
+              id: gc.clientId,
+              name: gc.client_name,
+              locations: gc.client_locations || [],
+              hasAfternoonSession: gc.hasAfternoonSession || false
+            }));
+
           timeBlockMap.get(row.id).groups.push({
             id: row.group_id.toString(),
             primaryStaff: row.primaryStaff || '',
@@ -69,7 +99,7 @@ router.get('/', async (req, res) => {
             roomLocation: row.roomLocation || '',
             groupName: row.groupName || '',
             color: row.color || '#3B82F6',
-            clients: [] // Would need separate query for clients
+            clients: groupClientList
           });
         }
       });
