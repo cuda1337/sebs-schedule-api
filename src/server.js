@@ -78,6 +78,9 @@ app.use('/api/webhooks', require('./routes/webhook.routes'));
 // Migration routes (BEFORE auth middleware - no authentication required)
 app.use('/api/migrate', require('./routes/migrate.routes'));
 
+// Enhanced lunch schedule routes (BEFORE auth middleware - no authentication required)
+app.use('/api/enhanced-lunch-schedule', require('./routes/enhancedLunchSchedule.routes'));
+
 // Test endpoint to check database schema
 app.get('/api/admin/test-staff-schema', async (req, res) => {
   try {
@@ -1155,7 +1158,6 @@ app.use('/api', scheduleVersionRoutes);
 app.use('/api', groupSessionRoutes);
 app.use('/api', supervisorRoutes);
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
-app.use('/api/enhanced-lunch-schedule', require('./routes/enhancedLunchSchedule.routes'));
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
