@@ -149,10 +149,10 @@ router.get('/', async (req, res) => {
                     }
                   }
                 }
+              },
+              orderBy: {
+                startTime: 'asc'
               }
-            },
-            orderBy: {
-              startTime: 'asc'
             }
           }
         });
