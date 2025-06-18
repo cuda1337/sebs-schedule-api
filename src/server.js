@@ -1152,6 +1152,8 @@ app.use('/api', scheduleVersionRoutes);
 app.use('/api', groupSessionRoutes);
 app.use('/api', supervisorRoutes);
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
+app.use('/api/enhanced-lunch-schedule', require('./routes/enhancedLunchSchedule.routes'));
+app.use('/api/migrate', require('./routes/migrate.routes'));
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }

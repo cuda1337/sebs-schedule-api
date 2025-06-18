@@ -34,6 +34,9 @@ model Staff {
   name         String
   locations    String[]         // Array of location names
   availability Json             // {"Monday-AM": true, "Monday-PM": false, ...}
+  role         String?          // "RBT", "BCBA", "In Training"
+  testDate     String?          // Test date for "In Training" staff
+  active       Boolean          @default(true)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   
@@ -57,6 +60,7 @@ model Client {
   
   assignments      Assignment[]
   groupSessionClients GroupSessionClient[]
+  lunchGroupClients LunchGroupClient[]
   changeLogs       ChangeLog[]     @relation("ChangeLogClient")
   originalOverrides DailyOverride[] @relation("OriginalClient")
   newOverrides      DailyOverride[] @relation("NewClient")
@@ -272,32 +276,90 @@ model LunchSchedule {
   id         Int      @id @default(autoincrement())
   date       DateTime @db.Date
   location   String   // Filter by location
-  timePeriod String   @default("12:30-1:00") // Lunch time period
   
-  groups     LunchGroup[]
+  // Finalization tracking
+  isFinalized                 Boolean  @default(false)
+  finalizedBy                 String?
+  finalizedAt                 DateTime?
   
+  // Post-finalization modification tracking
+  modifiedAfterFinalization   Boolean  @default(false)
+  lastModifiedBy              String?
+  lastModifiedAt              DateTime?
+  
+  // Relations
+  timeBlocks LunchTimeBlock[]
+  
+  // Metadata
   createdBy  String
   createdAt  DateTime @default(now())
-  modifiedBy String?
-  modifiedAt DateTime? @updatedAt
+  updatedAt  DateTime @updatedAt
   
   @@unique([date, location]) // One lunch schedule per date/location
   @@index([date])
   @@index([location])
+  @@index([isFinalized])
 }
 
-model LunchGroup {
+model LunchTimeBlock {
   id              Int    @id @default(autoincrement())
   lunchScheduleId Int
-  primaryStaff    String // Can be staff name or ID
-  helpers         Json   @default("[]") // Array of helper names
-  clientIds       Json   @default("[]") // Array of client IDs
-  color           String @default("#3B82F6") // Group color for UI
+  startTime       String // "12:30"
+  endTime         String // "13:00" 
+  label           String? // "Early Lunch", "Late Lunch"
   
+  // Relations
   lunchSchedule   LunchSchedule @relation(fields: [lunchScheduleId], references: [id], onDelete: Cascade)
+  groups          LunchGroup[]
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
   @@index([lunchScheduleId])
+}
+
+model LunchGroup {
+  id           Int    @id @default(autoincrement())
+  timeBlockId  Int
+  
+  // Staff assignments
+  primaryStaff String // Can be staff name or ID
+  helpers      String[] @default([]) // Array of helper names
+  
+  // Location and identification
+  roomLocation String? // "Play Gym", "Cafeteria"
+  groupName    String? // "Group 1", "Blue Group"
+  color        String  @default("#3B82F6") // Group color for UI
+  
+  // Relations
+  timeBlock    LunchTimeBlock @relation(fields: [timeBlockId], references: [id], onDelete: Cascade)
+  clients      LunchGroupClient[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([timeBlockId])
+}
+
+model LunchGroupClient {
+  id                   Int     @id @default(autoincrement())
+  lunchGroupId         Int
+  clientId             Int
+  
+  // Afternoon session status
+  hasAfternoonSession  Boolean @default(false)
+  afternoonSessionNote String? // Optional note about PM session
+  
+  // Order in group for display
+  displayOrder         Int     @default(0)
+  
+  // Relations
+  lunchGroup           LunchGroup @relation(fields: [lunchGroupId], references: [id], onDelete: Cascade)
+  client               Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  createdAt            DateTime @default(now())
+  
+  @@unique([lunchGroupId, clientId]) // Prevent duplicate client assignments
+  @@index([lunchGroupId])
+  @@index([clientId])
 }

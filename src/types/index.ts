@@ -4,12 +4,18 @@ export interface CreateStaffDto {
   name: string;
   locations: string[];
   availability: Record<string, boolean>;
+  role?: string;
+  testDate?: string;
+  active?: boolean;
 }
 
 export interface UpdateStaffDto {
   name?: string;
   locations?: string[];
   availability?: Record<string, boolean>;
+  role?: string;
+  testDate?: string;
+  active?: boolean;
 }
 
 export interface CreateClientDto {

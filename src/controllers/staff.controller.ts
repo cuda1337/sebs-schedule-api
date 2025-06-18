@@ -51,7 +51,10 @@ export const staffController = {
         data: {
           name: data.name,
           locations: data.locations,
-          availability: data.availability || {}
+          availability: data.availability || {},
+          role: data.role || 'RBT',
+          testDate: data.testDate,
+          active: data.active !== undefined ? data.active : true
         }
       });
       
@@ -93,7 +96,10 @@ export const staffController = {
         data: {
           ...(data.name && { name: data.name }),
           ...(data.locations && { locations: data.locations }),
-          ...(data.availability && { availability: data.availability })
+          ...(data.availability && { availability: data.availability }),
+          ...(data.role !== undefined && { role: data.role }),
+          ...(data.testDate !== undefined && { testDate: data.testDate }),
+          ...(data.active !== undefined && { active: data.active })
         }
       });
       
