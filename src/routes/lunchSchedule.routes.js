@@ -385,7 +385,7 @@ router.get('/available-clients', async (req, res) => {
       }
     });
 
-    console.log(`📋 Found ${dailyOverrides.length} daily overrides for ${date}`);
+    console.log(`📋 Found ${dailyOverrides.length} daily overrides for ${date}`);\n    \n    // Also check for overrides that don't specify a block (could be full day cancellations)\n    const allDayOverrides = await prisma.dailyOverride.findMany({\n      where: {\n        date: targetDate,\n        day: dayOfWeek,\n        OR: [\n          { block: null },\n          { block: 'Full Day' }\n        ]\n      },\n      include: {\n        originalClient: true,\n        newClient: true,\n        originalStaff: true,\n        newStaff: true\n      }\n    });\n    \n    console.log(`📋 Found ${allDayOverrides.length} all-day overrides for ${date}`);\n    \n    // Combine all overrides\n    const allOverrides = [...dailyOverrides, ...allDayOverrides];\n    console.log(`📋 Total overrides to process: ${allOverrides.length}`);
 
     // Build a map of effective assignments considering overrides
     const effectiveAssignments = new Map();
@@ -404,7 +404,7 @@ router.get('/available-clients', async (req, res) => {
     });
 
     // Apply overrides
-    dailyOverrides.forEach(override => {
+    allOverrides.forEach(override => {\n      console.log(`📋 Processing override: ${override.type} for client ${override.originalClientId}, block: ${override.block}`);
       if (override.type === 'cancellation' && override.originalClientId) {
         // Client cancelled - remove from available
         effectiveAssignments.delete(override.originalClientId);

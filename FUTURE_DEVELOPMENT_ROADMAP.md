@@ -109,7 +109,76 @@ if (existingClientAssignment && !overrideClientConflict) {
 - Update frontend to show multi-day cancellations
 - Add bulk operations for efficiency
 
-### 5. Advanced Reporting & Analytics
+### 5. Teams/Email Notifications for Lunch Schedule
+**Status:** PLANNED
+**Purpose:** Automatically notify staff when lunch schedules are finalized or modified
+
+**Technical Implementation Options:**
+
+#### Option 1: Microsoft Teams Webhook (Recommended)
+```javascript
+// When schedule is finalized:
+const notifyTeams = async (schedule, finalizedBy) => {
+  const webhookUrl = process.env.TEAMS_LUNCH_WEBHOOK_URL;
+  
+  const message = {
+    "@type": "MessageCard",
+    "themeColor": "0076D7",
+    "summary": "Lunch Schedule Finalized",
+    "sections": [{
+      "activityTitle": "🍽️ Lunch Schedule Finalized",
+      "facts": [
+        { "name": "Location:", "value": schedule.location },
+        { "name": "Date:", "value": formatDate(schedule.date) },
+        { "name": "Finalized by:", "value": finalizedBy },
+        { "name": "Groups:", "value": `${schedule.timeBlocks[0].groups.length} groups` }
+      ],
+      "text": "The lunch schedule has been finalized and is ready for staff."
+    }]
+  };
+  
+  await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(message)
+  });
+};
+```
+
+**Message Appearance:**
+- Shows as webhook message (not from specific user)
+- Appears in designated channel (e.g., #lunch-schedules)
+- Can include rich formatting and action buttons
+- Clear attribution showing who finalized
+
+#### Option 2: Email Notifications (SendGrid/AWS SES)
+```javascript
+const sendFinalizationEmail = async (schedule, recipients) => {
+  const msg = {
+    to: recipients, // ['supervisor@sebs.com', 'kitchen@sebs.com']
+    from: 'noreply@sebs.com',
+    subject: `Lunch Schedule Finalized - ${schedule.location}`,
+    html: generateLunchScheduleHTML(schedule),
+    text: generateLunchScheduleText(schedule)
+  };
+  
+  await sgMail.send(msg);
+};
+```
+
+#### Option 3: Power Automate Integration
+- Trigger Power Automate flow on finalization
+- Can perform multiple actions (Teams, Email, Calendar)
+- Most flexible but requires Flow setup
+
+**Implementation Notes:**
+- Add to finalize/unlock endpoints in lunchSchedule.routes.js
+- Store notification preferences per user/location
+- Include full schedule details in notification
+- Handle notification failures gracefully
+- Consider adding "View in App" links
+
+### 6. Advanced Reporting & Analytics
 **Status:** ✅ BASIC COMPLETE, Enhancement Opportunities
 **Completed:**
 - Staff call-out tracking with accurate hours
