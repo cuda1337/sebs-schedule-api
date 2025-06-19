@@ -1,2 +1,3 @@
 Trigger deployment for lunch schedule API fix
 Timestamp: 2025-06-18 Enhanced lunch schedule available-clients endpoint fix
+Timestamp: 2025-06-19 Add migration endpoint for lunch schedule override columns
