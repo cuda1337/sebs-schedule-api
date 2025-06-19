@@ -387,15 +387,12 @@ router.get('/available-clients', async (req, res) => {
 
     console.log(`📋 Found ${dailyOverrides.length} daily overrides for ${date}`);
     
-    // Also check for overrides that don't specify a block (could be full day cancellations)
+    // Also check for overrides that could be full day cancellations
     const allDayOverrides = await prisma.dailyOverride.findMany({
       where: {
         date: targetDate,
         day: dayOfWeek,
-        OR: [
-          { block: null },
-          { block: 'Full Day' }
-        ]
+        block: 'Full Day'
       },
       include: {
         originalClient: true,
