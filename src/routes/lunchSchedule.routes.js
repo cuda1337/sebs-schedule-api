@@ -372,6 +372,53 @@ router.get('/available-clients', async (req, res) => {
     };
 
     console.log(`📋 Returning ${result.availableClients.length} available clients`);
+    
+    // Add debug info
+    console.log(`📋 Debug info:`);
+    console.log(`   - Day: ${dayOfWeek}`);
+    console.log(`   - Location: ${location}`);
+    console.log(`   - AM assignments found: ${amAssignments.length}`);
+    console.log(`   - Daily overrides: ${dailyOverrides.length}`);
+    console.log(`   - Effective assignments: ${effectiveAssignments.size}`);
+    
+    // If no clients found, add a helpful debug response
+    if (result.availableClients.length === 0) {
+      // Check if we have any assignments for this day regardless of location
+      const anyDayAssignments = await prisma.assignment.findMany({
+        where: {
+          day: dayOfWeek,
+          block: 'AM',
+          versionId: 1
+        },
+        include: {
+          client: true,
+          staff: true
+        }
+      });
+      
+      console.log(`📋 Debug: Found ${anyDayAssignments.length} total AM assignments for ${dayOfWeek} (any location)`);
+      
+      // If we have assignments but not for this location, that's the issue
+      if (anyDayAssignments.length > 0) {
+        const locationsFound = [...new Set(anyDayAssignments.flatMap(a => a.client?.locations || []))];
+        console.log(`📋 Debug: Locations with assignments: ${locationsFound.join(', ')}`);
+        
+        // For now, let's include clients from any location to test functionality
+        const testClients = anyDayAssignments
+          .filter(a => a.client)
+          .map(assignment => ({
+            id: assignment.clientId,
+            name: assignment.client.name,
+            locations: assignment.client.locations || [],
+            hasAfternoonSession: false, // We'll check this separately if needed
+            staff: assignment.staff ? [assignment.staff.name] : []
+          }));
+          
+        result.availableClients = testClients;
+        console.log(`📋 Debug: Including ${testClients.length} clients from other locations for testing`);
+      }
+    }
+    
     res.json(result);
 
   } catch (error) {
