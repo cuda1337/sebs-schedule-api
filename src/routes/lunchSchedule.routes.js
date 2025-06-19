@@ -559,4 +559,151 @@ router.post('/test-data', async (req, res) => {
   }
 });
 
+// PATCH finalize schedule
+router.patch('/:id/finalize', async (req, res) => {
+  try {
+    const scheduleId = parseInt(req.params.id);
+    
+    if (isNaN(scheduleId)) {
+      return res.status(400).json({ 
+        error: 'Invalid schedule ID',
+        message: 'Schedule ID must be a number'
+      });
+    }
+
+    console.log(`🔒 Finalizing lunch schedule ID ${scheduleId}`);
+
+    // Check if schedule exists
+    const existingSchedule = await prisma.lunchSchedule.findUnique({
+      where: { id: scheduleId }
+    });
+
+    if (!existingSchedule) {
+      return res.status(404).json({ 
+        error: 'Schedule not found',
+        message: `Lunch schedule with ID ${scheduleId} not found`
+      });
+    }
+
+    // Update the schedule to finalized
+    const finalizedSchedule = await prisma.lunchSchedule.update({
+      where: { id: scheduleId },
+      data: {
+        isFinalized: true,
+        finalizedBy: 'current-user', // TODO: Get from auth context
+        finalizedAt: new Date()
+      },
+      include: {
+        timeBlocks: {
+          include: {
+            groups: {
+              include: {
+                clients: {
+                  include: {
+                    client: {
+                      select: {
+                        id: true,
+                        name: true,
+                        locations: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    console.log(`✅ Successfully finalized lunch schedule ID ${scheduleId}`);
+    
+    res.json({
+      message: 'Lunch schedule finalized successfully',
+      data: finalizedSchedule
+    });
+
+  } catch (error) {
+    console.error('❌ Error finalizing lunch schedule:', error);
+    res.status(500).json({ 
+      error: 'Failed to finalize lunch schedule',
+      details: error.message
+    });
+  }
+});
+
+// PATCH unlock schedule
+router.patch('/:id/unlock', async (req, res) => {
+  try {
+    const scheduleId = parseInt(req.params.id);
+    
+    if (isNaN(scheduleId)) {
+      return res.status(400).json({ 
+        error: 'Invalid schedule ID',
+        message: 'Schedule ID must be a number'
+      });
+    }
+
+    console.log(`🔓 Unlocking lunch schedule ID ${scheduleId}`);
+
+    // Check if schedule exists
+    const existingSchedule = await prisma.lunchSchedule.findUnique({
+      where: { id: scheduleId }
+    });
+
+    if (!existingSchedule) {
+      return res.status(404).json({ 
+        error: 'Schedule not found',
+        message: `Lunch schedule with ID ${scheduleId} not found`
+      });
+    }
+
+    // Update the schedule to unlocked
+    const unlockedSchedule = await prisma.lunchSchedule.update({
+      where: { id: scheduleId },
+      data: {
+        isFinalized: false,
+        modifiedAfterFinalization: existingSchedule.isFinalized ? true : existingSchedule.modifiedAfterFinalization,
+        lastModifiedBy: 'current-user', // TODO: Get from auth context
+        lastModifiedAt: new Date()
+      },
+      include: {
+        timeBlocks: {
+          include: {
+            groups: {
+              include: {
+                clients: {
+                  include: {
+                    client: {
+                      select: {
+                        id: true,
+                        name: true,
+                        locations: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    console.log(`✅ Successfully unlocked lunch schedule ID ${scheduleId}`);
+    
+    res.json({
+      message: 'Lunch schedule unlocked successfully',
+      data: unlockedSchedule
+    });
+
+  } catch (error) {
+    console.error('❌ Error unlocking lunch schedule:', error);
+    res.status(500).json({ 
+      error: 'Failed to unlock lunch schedule',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
