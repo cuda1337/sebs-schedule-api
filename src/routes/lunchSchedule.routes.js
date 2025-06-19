@@ -465,23 +465,51 @@ router.get('/available-clients', async (req, res) => {
     
     // If no clients found, add a helpful debug response
     if (result.availableClients.length === 0) {
-      // Check if we have any assignments for this day regardless of location
-      const anyDayAssignments = await prisma.assignment.findMany({
+      console.log(`📋 No assignments found, checking if we have any clients at all...`);
+      
+      // Since there are no assignments, let's show all clients for the location for testing
+      const allClients = await prisma.client.findMany({
         where: {
-          day: dayOfWeek,
-          block: 'AM',
-          versionId: 1
+          locations: {
+            has: location
+          }
         },
-        include: {
-          client: true,
-          staff: true
+        orderBy: {
+          name: 'asc'
         }
       });
       
-      console.log(`📋 Debug: Found ${anyDayAssignments.length} total AM assignments for ${dayOfWeek} (any location)`);
+      console.log(`📋 Found ${allClients.length} total clients for location ${location}`);
       
-      // If we have assignments but not for this location, that's the issue
-      if (anyDayAssignments.length > 0) {
+      if (allClients.length > 0) {
+        const testClients = allClients.map(client => ({
+          id: client.id,
+          name: client.name,
+          locations: client.locations || [],
+          hasAfternoonSession: false, // Default for testing
+          staff: []
+        }));
+        
+        result.availableClients = testClients;
+        console.log(`📋 Showing ${testClients.length} clients from location ${location} for testing (no assignments exist yet)`);
+      } else {
+        // Check if we have any assignments for this day regardless of location
+        const anyDayAssignments = await prisma.assignment.findMany({
+          where: {
+            day: dayOfWeek,
+            block: 'AM',
+            versionId: 1
+          },
+          include: {
+            client: true,
+            staff: true
+          }
+        });
+        
+        console.log(`📋 Debug: Found ${anyDayAssignments.length} total AM assignments for ${dayOfWeek} (any location)`);
+        
+        // If we have assignments but not for this location, that's the issue
+        if (anyDayAssignments.length > 0) {
         const locationsFound = [...new Set(anyDayAssignments.flatMap(a => a.client?.locations || []))];
         console.log(`📋 Debug: Locations with assignments: ${locationsFound.join(', ')}`);
         
