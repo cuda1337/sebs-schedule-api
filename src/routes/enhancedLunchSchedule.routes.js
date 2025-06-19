@@ -13,31 +13,28 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: 'Date and location are required' });
     }
 
-    // Use raw SQL to avoid Prisma schema issues with missing columns
+    // Use raw SQL to match production schema (only existing columns)
     const lunchSchedule = await prisma.$queryRaw`
-      SELECT id, date, location, "isFinalized", "finalizedBy", "createdBy", "createdAt"
+      SELECT id, date, location, "createdBy", "createdAt"
       FROM "LunchSchedule" 
       WHERE date = ${new Date(date)}::date AND location = ${location}
     `;
 
-    // Get time blocks if they exist
-    let timeBlocks = [];
+    // Get groups directly from production schema (no time blocks)
+    let groups = [];
     if (lunchSchedule.length > 0) {
       const scheduleId = lunchSchedule[0].id;
       
       try {
-        timeBlocks = await prisma.$queryRaw`
-          SELECT tb.id, tb."startTime", tb."endTime", tb.label,
-                 lg.id as group_id, lg."primaryStaff", lg.helpers, lg."roomLocation", 
-                 lg."groupName", lg.color
-          FROM "LunchTimeBlock" tb
-          LEFT JOIN "LunchGroup" lg ON lg."timeBlockId" = tb.id
-          WHERE tb."lunchScheduleId" = ${scheduleId}
-          ORDER BY tb."startTime", lg.id
+        groups = await prisma.$queryRaw`
+          SELECT lg.id, lg."primaryStaff", lg.helpers, lg."clientIds", lg.color
+          FROM "LunchGroup" lg
+          WHERE lg."lunchScheduleId" = ${scheduleId}
+          ORDER BY lg.id
         `;
       } catch (error) {
-        console.log('TimeBlocks table might not exist, using empty array');
-        timeBlocks = [];
+        console.log('Error loading lunch groups:', error);
+        groups = [];
       }
     }
 
@@ -45,78 +42,58 @@ router.get('/', async (req, res) => {
       // Transform the data to frontend format
       const schedule = lunchSchedule[0];
       
-      // Get all clients for all groups in this schedule
-      let groupClients = [];
-      if (timeBlocks.length > 0) {
-        try {
-          groupClients = await prisma.$queryRaw`
-            SELECT lgc.*, c.name as client_name, c.locations as client_locations,
-                   lg.id as group_id
-            FROM "LunchGroupClient" lgc
-            JOIN "Client" c ON c.id = lgc."clientId"
-            JOIN "LunchGroup" lg ON lg.id = lgc."lunchGroupId"
-            JOIN "LunchTimeBlock" tb ON tb.id = lg."timeBlockId"
-            WHERE tb."lunchScheduleId" = ${schedule.id}
-            ORDER BY lgc."displayOrder", lgc."clientId"
-          `;
-        } catch (error) {
-          console.log('Error loading lunch group clients:', error);
-          groupClients = [];
-        }
-      }
-      
-      // Group the time blocks and their groups
-      const groupedTimeBlocks = [];
-      const timeBlockMap = new Map();
-      
-      timeBlocks.forEach(row => {
-        if (!timeBlockMap.has(row.id)) {
-          timeBlockMap.set(row.id, {
-            id: row.id.toString(),
-            startTime: row.startTime,
-            endTime: row.endTime,
-            label: row.label || 'Lunch',
-            groups: []
-          });
-          groupedTimeBlocks.push(timeBlockMap.get(row.id));
+      // Convert groups to the expected format with client details
+      const groupsWithClientDetails = [];
+      for (const group of groups) {
+        const clientIds = group.clientIds || [];
+        const clients = [];
+        
+        // Get client details for each client ID in the group
+        for (const clientId of clientIds) {
+          try {
+            const clientDetails = await prisma.$queryRaw`
+              SELECT id, name, locations
+              FROM "Client"
+              WHERE id = ${clientId}
+            `;
+            
+            if (clientDetails.length > 0) {
+              clients.push({
+                id: clientDetails[0].id,
+                name: clientDetails[0].name,
+                locations: clientDetails[0].locations || [],
+                hasAfternoonSession: false // Default for now since we don't store this in production
+              });
+            }
+          } catch (error) {
+            console.log(`Error loading client ${clientId}:`, error);
+          }
         }
         
-        if (row.group_id) {
-          // Get clients for this specific group
-          const groupClientList = groupClients
-            .filter(gc => gc.group_id === row.group_id)
-            .map(gc => ({
-              id: gc.clientId,
-              name: gc.client_name,
-              locations: gc.client_locations || [],
-              hasAfternoonSession: gc.hasAfternoonSession || false
-            }));
-
-          timeBlockMap.get(row.id).groups.push({
-            id: row.group_id.toString(),
-            primaryStaff: row.primaryStaff || '',
-            helpers: row.helpers || [],
-            roomLocation: row.roomLocation || '',
-            groupName: row.groupName || '',
-            color: row.color || '#3B82F6',
-            clients: groupClientList
-          });
-        }
-      });
+        groupsWithClientDetails.push({
+          id: group.id.toString(),
+          primaryStaff: group.primaryStaff || '',
+          helpers: group.helpers || [],
+          roomLocation: '', // Not stored in production schema
+          groupName: '', // Not stored in production schema
+          color: group.color || '#3B82F6',
+          clients: clients
+        });
+      }
 
       const transformedSchedule = {
         id: schedule.id,
         date: schedule.date,
         location: schedule.location,
-        isFinalized: schedule.isFinalized || false,
-        finalizedBy: schedule.finalizedBy,
-        timeBlocks: groupedTimeBlocks.length > 0 ? groupedTimeBlocks : [
+        isFinalized: false, // Default until we implement in production schema
+        finalizedBy: null,
+        timeBlocks: [
           {
             id: 'default-lunch',
             startTime: '12:30',
             endTime: '13:00',
             label: 'Lunch',
-            groups: []
+            groups: groupsWithClientDetails
           }
         ],
         overrides: {
@@ -188,27 +165,21 @@ router.post('/', async (req, res) => {
       // Update existing schedule
       scheduleId = existingSchedule[0].id;
       
+      // Delete existing groups for this schedule
       await prisma.$executeRaw`
-        UPDATE "LunchSchedule" 
-        SET "lastModifiedBy" = ${createdBy}, "lastModifiedAt" = NOW()
-        WHERE id = ${scheduleId}
-      `;
-      
-      // Delete existing time blocks (cascade will delete groups)
-      await prisma.$executeRaw`
-        DELETE FROM "LunchTimeBlock" WHERE "lunchScheduleId" = ${scheduleId}
+        DELETE FROM "LunchGroup" WHERE "lunchScheduleId" = ${scheduleId}
       `;
     } else {
-      // Create new schedule
+      // Create new schedule (using production schema columns only)
       const result = await prisma.$queryRaw`
-        INSERT INTO "LunchSchedule" (date, location, "createdBy", "isFinalized")
-        VALUES (${new Date(date)}::date, ${location}, ${createdBy}, false)
+        INSERT INTO "LunchSchedule" (date, location, "createdBy")
+        VALUES (${new Date(date)}::date, ${location}, ${createdBy})
         RETURNING id
       `;
       scheduleId = result[0].id;
     }
 
-    // Create time blocks and groups
+    // Create groups directly (production DB doesn't have LunchTimeBlock)
     const processedTimeBlocks = timeBlocks || [
       {
         startTime: '12:30',
@@ -218,40 +189,40 @@ router.post('/', async (req, res) => {
       }
     ];
 
-    for (const timeBlock of processedTimeBlocks) {
-      const timeBlockResult = await prisma.$queryRaw`
-        INSERT INTO "LunchTimeBlock" ("lunchScheduleId", "startTime", "endTime", label)
-        VALUES (${scheduleId}, ${timeBlock.startTime}, ${timeBlock.endTime}, ${timeBlock.label || 'Lunch'})
-        RETURNING id
-      `;
-      
-      const timeBlockId = timeBlockResult[0].id;
-      
-      // Create groups for this time block
-      for (const group of (timeBlock.groups || [])) {
-        const groupResult = await prisma.$queryRaw`
-          INSERT INTO "LunchGroup" ("timeBlockId", "primaryStaff", helpers, "roomLocation", "groupName", color)
-          VALUES (${timeBlockId}, ${group.primaryStaff || ''}, ${group.helpers || []}::text[], 
-                  ${group.roomLocation || ''}, ${group.groupName || ''}, ${group.color || '#3B82F6'})
-          RETURNING id
-        `;
-        
-        const groupId = groupResult[0].id;
-        
-        // Create client assignments for this group
-        for (let i = 0; i < (group.clients || []).length; i++) {
-          const client = group.clients[i];
-          await prisma.$executeRaw`
-            INSERT INTO "LunchGroupClient" ("lunchGroupId", "clientId", "hasAfternoonSession", "displayOrder")
-            VALUES (${groupId}, ${client.id}, ${client.hasAfternoonSession || false}, ${i})
+    // For now, just save all groups to the first time block's groups
+    const firstTimeBlock = processedTimeBlocks[0];
+    if (firstTimeBlock && firstTimeBlock.groups) {
+      for (const group of firstTimeBlock.groups) {
+        try {
+          // Extract client IDs for the current production database schema
+          const clientIds = (group.clients || []).map(client => client.clientId || client.id);
+          
+          console.log('Creating group with data:', { 
+            scheduleId, 
+            primaryStaff: group.primaryStaff || '', 
+            helpers: group.helpers || [],
+            clientIds,
+            color: group.color || '#3B82F6'
+          });
+          
+          const groupResult = await prisma.$queryRaw`
+            INSERT INTO "LunchGroup" ("lunchScheduleId", "primaryStaff", helpers, "clientIds", color)
+            VALUES (${scheduleId}, ${group.primaryStaff || ''}, ${JSON.stringify(group.helpers || [])}::jsonb, 
+                    ${JSON.stringify(clientIds)}::jsonb, ${group.color || '#3B82F6'})
+            RETURNING id
           `;
+          
+          console.log('Group created successfully:', groupResult[0]);
+        } catch (groupError) {
+          console.error('Error creating group:', groupError);
+          throw groupError;
         }
       }
     }
 
-    // Fetch the created/updated schedule
+    // Fetch the created/updated schedule (using production schema fields)
     const updatedSchedule = await prisma.$queryRaw`
-      SELECT id, date, location, "isFinalized", "finalizedBy", "createdBy", "createdAt"
+      SELECT id, date, location, "createdBy", "createdAt"
       FROM "LunchSchedule" 
       WHERE id = ${scheduleId}
     `;
@@ -260,8 +231,8 @@ router.post('/', async (req, res) => {
       id: updatedSchedule[0].id,
       date: updatedSchedule[0].date,
       location: updatedSchedule[0].location,
-      isFinalized: updatedSchedule[0].isFinalized || false,
-      finalizedBy: updatedSchedule[0].finalizedBy,
+      isFinalized: false, // Default until implemented in production
+      finalizedBy: null,
       timeBlocks: processedTimeBlocks,
       overrides: {
         manuallyMovedToAvailable: [],
@@ -275,7 +246,13 @@ router.post('/', async (req, res) => {
     res.json(transformedSchedule);
   } catch (error) {
     console.error('Error saving lunch schedule:', error);
-    res.status(500).json({ error: 'Failed to save lunch schedule' });
+    console.error('Error details:', error.message);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to save lunch schedule',
+      details: error.message,
+      requestBody: { date, location, createdBy }
+    });
   }
 });
 
