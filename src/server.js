@@ -78,7 +78,8 @@ app.use('/api/webhooks', require('./routes/webhook.routes'));
 // Migration routes (BEFORE auth middleware - no authentication required)
 app.use('/api/migrate', require('./routes/migrate.routes'));
 
-// Lunch schedule routes removed - will be rebuilt from scratch
+// Simple lunch schedule routes (BEFORE auth middleware for testing)
+app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
 
 // Debug database schema routes (BEFORE auth middleware - no authentication required)
 app.use('/api/debug-database', require('./routes/debug-database.routes'));

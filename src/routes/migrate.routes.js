@@ -214,6 +214,107 @@ router.get('/status', async (req, res) => {
   }
 });
 
+// Add missing override columns to LunchSchedule table
+router.post('/add-lunch-override-columns', async (req, res) => {
+  try {
+    console.log('🚀 Starting lunch schedule override columns migration...');
+
+    // Check if we're in production environment
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('render.com');
+    
+    if (!isProduction) {
+      return res.status(403).json({ 
+        error: 'Migration can only be run in production environment',
+        environment: process.env.NODE_ENV || 'development'
+      });
+    }
+
+    // Check if LunchSchedule table exists
+    const tableExists = await prisma.$queryRaw`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'LunchSchedule'
+      ) as exists
+    `;
+
+    if (!tableExists[0].exists) {
+      return res.status(404).json({
+        error: 'LunchSchedule table does not exist. Run the full migration first.'
+      });
+    }
+
+    // Check which columns already exist
+    const existingColumns = await prisma.$queryRaw`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'LunchSchedule' 
+      AND column_name IN ('manuallyMovedToAvailable', 'manualStayWithStaff', 'excludedClients')
+    `;
+
+    const existingColumnNames = existingColumns.map(col => col.column_name);
+    const columnsToAdd = [];
+
+    // Add manuallyMovedToAvailable column if it doesn't exist
+    if (!existingColumnNames.includes('manuallyMovedToAvailable')) {
+      await prisma.$executeRaw`
+        ALTER TABLE "LunchSchedule" 
+        ADD COLUMN "manuallyMovedToAvailable" INTEGER[] DEFAULT '{}'
+      `;
+      columnsToAdd.push('manuallyMovedToAvailable');
+      console.log('✅ Added manuallyMovedToAvailable column');
+    }
+
+    // Add manualStayWithStaff column if it doesn't exist
+    if (!existingColumnNames.includes('manualStayWithStaff')) {
+      await prisma.$executeRaw`
+        ALTER TABLE "LunchSchedule" 
+        ADD COLUMN "manualStayWithStaff" INTEGER[] DEFAULT '{}'
+      `;
+      columnsToAdd.push('manualStayWithStaff');
+      console.log('✅ Added manualStayWithStaff column');
+    }
+
+    // Add excludedClients column if it doesn't exist
+    if (!existingColumnNames.includes('excludedClients')) {
+      await prisma.$executeRaw`
+        ALTER TABLE "LunchSchedule" 
+        ADD COLUMN "excludedClients" INTEGER[] DEFAULT '{}'
+      `;
+      columnsToAdd.push('excludedClients');
+      console.log('✅ Added excludedClients column');
+    }
+
+    // Verify the columns were added
+    const verifyColumns = await prisma.$queryRaw`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns 
+      WHERE table_name = 'LunchSchedule'
+      AND column_name IN ('manuallyMovedToAvailable', 'manualStayWithStaff', 'excludedClients')
+      ORDER BY ordinal_position
+    `;
+
+    res.json({
+      success: true,
+      message: columnsToAdd.length > 0 
+        ? `Successfully added ${columnsToAdd.length} override columns to LunchSchedule table`
+        : 'All override columns already exist',
+      columnsAdded: columnsToAdd,
+      existingColumns: existingColumnNames,
+      verifiedColumns: verifyColumns
+    });
+
+  } catch (error) {
+    console.error('❌ Error during override columns migration:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Migration failed',
+      details: error.message,
+      hint: 'Make sure the database connection is working and you have proper permissions'
+    });
+  }
+});
+
 // Regenerate Prisma client
 router.post('/regenerate-prisma', async (req, res) => {
   try {
@@ -245,6 +346,98 @@ router.post('/regenerate-prisma', async (req, res) => {
       success: false,
       error: 'Failed to regenerate Prisma client',
       details: error.message
+    });
+  }
+});
+
+// Test endpoint for adding lunch override columns (no production check)
+router.post('/test-add-lunch-columns', async (req, res) => {
+  try {
+    console.log('🚀 Testing lunch schedule override columns migration...');
+
+    // Check if LunchSchedule table exists
+    const tableExists = await prisma.$queryRaw`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'LunchSchedule'
+      ) as exists
+    `;
+
+    if (!tableExists[0].exists) {
+      return res.status(404).json({
+        error: 'LunchSchedule table does not exist. Run the full migration first.'
+      });
+    }
+
+    // Check which columns already exist
+    const existingColumns = await prisma.$queryRaw`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'LunchSchedule' 
+      AND column_name IN ('manuallyMovedToAvailable', 'manualStayWithStaff', 'excludedClients')
+    `;
+
+    const existingColumnNames = existingColumns.map(col => col.column_name);
+    const columnsToAdd = [];
+
+    // Add manuallyMovedToAvailable column if it doesn't exist
+    if (!existingColumnNames.includes('manuallyMovedToAvailable')) {
+      await prisma.$executeRaw`
+        ALTER TABLE "LunchSchedule" 
+        ADD COLUMN "manuallyMovedToAvailable" INTEGER[] DEFAULT '{}'
+      `;
+      columnsToAdd.push('manuallyMovedToAvailable');
+      console.log('✅ Added manuallyMovedToAvailable column');
+    }
+
+    // Add manualStayWithStaff column if it doesn't exist
+    if (!existingColumnNames.includes('manualStayWithStaff')) {
+      await prisma.$executeRaw`
+        ALTER TABLE "LunchSchedule" 
+        ADD COLUMN "manualStayWithStaff" INTEGER[] DEFAULT '{}'
+      `;
+      columnsToAdd.push('manualStayWithStaff');
+      console.log('✅ Added manualStayWithStaff column');
+    }
+
+    // Add excludedClients column if it doesn't exist
+    if (!existingColumnNames.includes('excludedClients')) {
+      await prisma.$executeRaw`
+        ALTER TABLE "LunchSchedule" 
+        ADD COLUMN "excludedClients" INTEGER[] DEFAULT '{}'
+      `;
+      columnsToAdd.push('excludedClients');
+      console.log('✅ Added excludedClients column');
+    }
+
+    // Verify the columns were added
+    const verifyColumns = await prisma.$queryRaw`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns 
+      WHERE table_name = 'LunchSchedule'
+      AND column_name IN ('manuallyMovedToAvailable', 'manualStayWithStaff', 'excludedClients')
+      ORDER BY ordinal_position
+    `;
+
+    res.json({
+      success: true,
+      message: columnsToAdd.length > 0 
+        ? `Successfully added ${columnsToAdd.length} override columns to LunchSchedule table`
+        : 'All override columns already exist',
+      columnsAdded: columnsToAdd,
+      existingColumns: existingColumnNames,
+      verifiedColumns: verifyColumns,
+      environment: process.env.NODE_ENV || 'development'
+    });
+
+  } catch (error) {
+    console.error('❌ Error during override columns migration:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Migration failed',
+      details: error.message,
+      hint: 'Make sure the database connection is working and you have proper permissions'
     });
   }
 });
