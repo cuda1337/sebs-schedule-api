@@ -229,11 +229,23 @@ router.post('/', async (req, res) => {
       
       // Create groups for this time block
       for (const group of (timeBlock.groups || [])) {
-        await prisma.$executeRaw`
+        const groupResult = await prisma.$queryRaw`
           INSERT INTO "LunchGroup" ("timeBlockId", "primaryStaff", helpers, "roomLocation", "groupName", color)
           VALUES (${timeBlockId}, ${group.primaryStaff || ''}, ${group.helpers || []}::text[], 
                   ${group.roomLocation || ''}, ${group.groupName || ''}, ${group.color || '#3B82F6'})
+          RETURNING id
         `;
+        
+        const groupId = groupResult[0].id;
+        
+        // Create client assignments for this group
+        for (let i = 0; i < (group.clients || []).length; i++) {
+          const client = group.clients[i];
+          await prisma.$executeRaw`
+            INSERT INTO "LunchGroupClient" ("lunchGroupId", "clientId", "hasAfternoonSession", "displayOrder")
+            VALUES (${groupId}, ${client.id}, ${client.hasAfternoonSession || false}, ${i})
+          `;
+        }
       }
     }
 
@@ -265,6 +277,35 @@ router.post('/', async (req, res) => {
     console.error('Error saving lunch schedule:', error);
     res.status(500).json({ error: 'Failed to save lunch schedule' });
   }
+});
+
+// Debug endpoint to test if route is working
+router.get('/test-debug', async (req, res) => {
+  res.json({ 
+    message: 'Enhanced lunch schedule routes are working!', 
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    query: req.query
+  });
+});
+
+// Get available clients for lunch (those with AM assignments but not in lunch groups yet)
+router.get('/available-clients', async (req, res) => {
+  console.log('🔍 Available clients endpoint hit!', req.query);
+  
+  // Simplified response for debugging
+  res.json({
+    message: 'Available clients endpoint is working!',
+    timestamp: new Date().toISOString(),
+    query: req.query,
+    availableClients: [],
+    shouldStayWithStaff: [],
+    overrides: {
+      manuallyMovedToAvailable: [],
+      manualStayWithStaff: [],
+      excludedClients: []
+    }
+  });
 });
 
 module.exports = router;
