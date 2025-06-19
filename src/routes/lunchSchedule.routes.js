@@ -266,29 +266,104 @@ router.get('/available-clients', async (req, res) => {
     const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
     console.log(`📋 Day of week: ${dayOfWeek}`);
     
-    // Find all clients (for now, we'll return all clients since we don't have assignment logic yet)
-    const allClients = await prisma.client.findMany({
-      orderBy: { name: 'asc' }
+    // Find clients who have AM assignments on this day at this location
+    const amAssignments = await prisma.assignment.findMany({
+      where: {
+        day: dayOfWeek,
+        block: 'AM',
+        versionId: 1 // Main schedule
+      },
+      include: {
+        client: true,
+        staff: true
+      }
     });
 
-    console.log(`📋 Found ${allClients.length} total clients`);
+    console.log(`📋 Found ${amAssignments.length} AM assignments for ${dayOfWeek}`);
 
-    // For testing, we'll return a simple structure
-    // Later this can be enhanced with actual assignment logic
-    const availableClients = allClients.map(client => ({
-      id: client.id,
-      name: client.name,
-      locations: client.locations || [], // PostgreSQL arrays work directly
-      hasAfternoonSession: false, // Default for testing
-      staff: [] // Default for testing
+    // Filter assignments by location and process overrides
+    const targetDate = new Date(date);
+    const dailyOverrides = await prisma.dailyOverride.findMany({
+      where: {
+        date: targetDate,
+        day: dayOfWeek,
+        block: 'AM'
+      },
+      include: {
+        originalClient: true,
+        newClient: true,
+        originalStaff: true,
+        newStaff: true
+      }
+    });
+
+    console.log(`📋 Found ${dailyOverrides.length} daily overrides for ${date}`);
+
+    // Build a map of effective assignments considering overrides
+    const effectiveAssignments = new Map();
+    
+    // Start with base assignments
+    amAssignments.forEach(assignment => {
+      const clientLocations = assignment.client?.locations || [];
+      if (clientLocations.includes(location)) {
+        effectiveAssignments.set(assignment.clientId, {
+          clientId: assignment.clientId,
+          client: assignment.client,
+          staff: assignment.staff,
+          isActive: true
+        });
+      }
+    });
+
+    // Apply overrides
+    dailyOverrides.forEach(override => {
+      if (override.type === 'cancellation' && override.originalClientId) {
+        // Client cancelled - remove from available
+        effectiveAssignments.delete(override.originalClientId);
+      } else if (override.type === 'reassignment' && override.originalClientId && override.newClientId) {
+        // Client was reassigned - original client is no longer assigned
+        effectiveAssignments.delete(override.originalClientId);
+        // New client is now assigned (if they're at this location)
+        if (override.newClient) {
+          const newClientLocations = override.newClient.locations || [];
+          if (newClientLocations.includes(location)) {
+            effectiveAssignments.set(override.newClientId, {
+              clientId: override.newClientId,
+              client: override.newClient,
+              staff: override.newStaff || override.originalStaff,
+              isActive: true
+            });
+          }
+        }
+      }
+    });
+
+    // Check for PM assignments to determine hasAfternoonSession
+    const pmAssignments = await prisma.assignment.findMany({
+      where: {
+        day: dayOfWeek,
+        block: 'PM',
+        versionId: 1,
+        clientId: {
+          in: Array.from(effectiveAssignments.keys())
+        }
+      }
+    });
+
+    const clientsWithPM = new Set(pmAssignments.map(a => a.clientId));
+
+    // Build final available clients list
+    const availableClients = Array.from(effectiveAssignments.values()).map(assignment => ({
+      id: assignment.clientId,
+      name: assignment.client.name,
+      locations: assignment.client.locations || [],
+      hasAfternoonSession: clientsWithPM.has(assignment.clientId),
+      staff: assignment.staff ? [assignment.staff.name] : []
     }));
 
-    // For testing, return mock categories
     const result = {
-      availableClients: availableClients.filter(c => 
-        c.locations.includes(location) || c.locations.length === 0
-      ),
-      shouldStayWithStaff: [], // Will be populated with actual logic later
+      availableClients: availableClients,
+      shouldStayWithStaff: [], // Can be enhanced later for auto-categorization
       overrides: {
         manuallyMovedToAvailable: [],
         manualStayWithStaff: [],

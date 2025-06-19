@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
 async function testLunchScheduleAPI() {
-  const baseURL = 'http://localhost:3001/api/lunch-schedules';
+  const baseURL = 'https://sebs-schedule-api.onrender.com/api/lunch-schedules';
   
   console.log('🧪 Testing Lunch Schedule API...\n');
 
