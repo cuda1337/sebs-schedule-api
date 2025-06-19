@@ -510,48 +510,49 @@ router.get('/available-clients', async (req, res) => {
         
         // If we have assignments but not for this location, that's the issue
         if (anyDayAssignments.length > 0) {
-        const locationsFound = [...new Set(anyDayAssignments.flatMap(a => a.client?.locations || []))];
-        console.log(`📋 Debug: Locations with assignments: ${locationsFound.join(', ')}`);
-        
-        // Include clients from specific location or if no location restriction
-        const locationFilteredClients = anyDayAssignments
-          .filter(a => a.client)
-          .filter(assignment => {
-            const clientLocations = assignment.client?.locations || [];
-            // Include if client has the target location OR if location filtering is 'all'
-            return clientLocations.includes(location) || 
-                   location === 'all' || 
-                   clientLocations.length === 0;
-          })
-          .map(assignment => ({
-            id: assignment.clientId,
-            name: assignment.client.name,
-            locations: assignment.client.locations || [],
-            hasAfternoonSession: false, // We'll check PM separately
-            staff: assignment.staff ? [assignment.staff.name] : []
-          }));
+          const locationsFound = [...new Set(anyDayAssignments.flatMap(a => a.client?.locations || []))];
+          console.log(`📋 Debug: Locations with assignments: ${locationsFound.join(', ')}`);
           
-        // Check for PM sessions for these clients
-        if (locationFilteredClients.length > 0) {
-          const pmAssignments = await prisma.assignment.findMany({
-            where: {
-              day: dayOfWeek,
-              block: 'PM',
-              versionId: 1,
-              clientId: {
-                in: locationFilteredClients.map(c => c.id)
+          // Include clients from specific location or if no location restriction
+          const locationFilteredClients = anyDayAssignments
+            .filter(a => a.client)
+            .filter(assignment => {
+              const clientLocations = assignment.client?.locations || [];
+              // Include if client has the target location OR if location filtering is 'all'
+              return clientLocations.includes(location) || 
+                     location === 'all' || 
+                     clientLocations.length === 0;
+            })
+            .map(assignment => ({
+              id: assignment.clientId,
+              name: assignment.client.name,
+              locations: assignment.client.locations || [],
+              hasAfternoonSession: false, // We'll check PM separately
+              staff: assignment.staff ? [assignment.staff.name] : []
+            }));
+            
+          // Check for PM sessions for these clients
+          if (locationFilteredClients.length > 0) {
+            const pmAssignments = await prisma.assignment.findMany({
+              where: {
+                day: dayOfWeek,
+                block: 'PM',
+                versionId: 1,
+                clientId: {
+                  in: locationFilteredClients.map(c => c.id)
+                }
               }
-            }
-          });
-          
-          const clientsWithPM = new Set(pmAssignments.map(a => a.clientId));
-          locationFilteredClients.forEach(client => {
-            client.hasAfternoonSession = clientsWithPM.has(client.id);
-          });
+            });
+            
+            const clientsWithPM = new Set(pmAssignments.map(a => a.clientId));
+            locationFilteredClients.forEach(client => {
+              client.hasAfternoonSession = clientsWithPM.has(client.id);
+            });
+          }
+            
+          result.availableClients = locationFilteredClients;
+          console.log(`📋 Debug: Including ${locationFilteredClients.length} clients for location '${location}'`);
         }
-          
-        result.availableClients = locationFilteredClients;
-        console.log(`📋 Debug: Including ${locationFilteredClients.length} clients for location '${location}'`);
       }
     }
     
