@@ -78,11 +78,7 @@ app.use('/api/webhooks', require('./routes/webhook.routes'));
 // Migration routes (BEFORE auth middleware - no authentication required)
 app.use('/api/migrate', require('./routes/migrate.routes'));
 
-// Enhanced lunch schedule routes (BEFORE auth middleware - no authentication required)
-app.use('/api/enhanced-lunch-schedule', require('./routes/enhancedLunchSchedule.routes'));
-
-// Debug lunch schedule routes (BEFORE auth middleware - no authentication required)
-app.use('/api/debug-lunch', require('./routes/debug-lunch.routes'));
+// Lunch schedule routes removed - will be rebuilt from scratch
 
 // Debug database schema routes (BEFORE auth middleware - no authentication required)
 app.use('/api/debug-database', require('./routes/debug-database.routes'));
@@ -1228,7 +1224,7 @@ app.use('/api/test', require('./routes/test-restore'));
 app.use('/api', scheduleVersionRoutes);
 app.use('/api', groupSessionRoutes);
 app.use('/api', supervisorRoutes);
-app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
+// app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes')); // Removed - will rebuild
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
