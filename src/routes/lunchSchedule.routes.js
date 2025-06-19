@@ -251,11 +251,14 @@ router.post('/', async (req, res) => {
 // Debug endpoint to see what assignments exist
 router.get('/debug-assignments', async (req, res) => {
   try {
+    // First check all assignments without any filters
+    const totalAssignments = await prisma.assignment.count();
+    console.log(`📋 Total assignments in database: ${totalAssignments}`);
+    
     // Get all assignments grouped by day
     const allAssignments = await prisma.assignment.findMany({
-      where: {
-        versionId: 1 // Main schedule
-      },
+      // Remove versionId filter to see all assignments
+    
       include: {
         client: {
           select: {
@@ -307,8 +310,18 @@ router.get('/debug-assignments', async (req, res) => {
     });
 
     res.json({
-      totalAssignments: allAssignments.length,
-      summary
+      totalCount: totalAssignments,
+      foundAssignments: allAssignments.length,
+      summary,
+      sampleAssignments: allAssignments.slice(0, 5).map(a => ({
+        id: a.id,
+        day: a.day,
+        block: a.block,
+        versionId: a.versionId,
+        clientName: a.client?.name,
+        staffName: a.staff?.name,
+        locations: a.client?.locations
+      }))
     });
 
   } catch (error) {
