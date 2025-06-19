@@ -248,6 +248,75 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Debug endpoint to see what assignments exist
+router.get('/debug-assignments', async (req, res) => {
+  try {
+    // Get all assignments grouped by day
+    const allAssignments = await prisma.assignment.findMany({
+      where: {
+        versionId: 1 // Main schedule
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            locations: true
+          }
+        },
+        staff: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      },
+      orderBy: [
+        { day: 'asc' },
+        { block: 'asc' }
+      ]
+    });
+
+    const summary = {};
+    allAssignments.forEach(assignment => {
+      const key = `${assignment.day}-${assignment.block}`;
+      if (!summary[key]) {
+        summary[key] = {
+          day: assignment.day,
+          block: assignment.block,
+          count: 0,
+          locations: new Set(),
+          sampleClients: []
+        };
+      }
+      summary[key].count++;
+      if (assignment.client?.locations) {
+        assignment.client.locations.forEach(loc => summary[key].locations.add(loc));
+      }
+      if (summary[key].sampleClients.length < 3) {
+        summary[key].sampleClients.push({
+          name: assignment.client?.name,
+          locations: assignment.client?.locations
+        });
+      }
+    });
+
+    // Convert locations Set to Array for JSON
+    Object.keys(summary).forEach(key => {
+      summary[key].locations = Array.from(summary[key].locations);
+    });
+
+    res.json({
+      totalAssignments: allAssignments.length,
+      summary
+    });
+
+  } catch (error) {
+    console.error('Error in debug assignments:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET available clients for lunch schedule
 router.get('/available-clients', async (req, res) => {
   try {
