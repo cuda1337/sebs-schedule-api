@@ -425,7 +425,7 @@ router.get('/available-clients', async (req, res) => {
       where: {
         day: dayOfWeek,
         block: 'PM',
-        versionId: 1,
+        // Remove versionId filter to include all PM assignments
         clientId: {
           in: Array.from(effectiveAssignments.keys())
         }
