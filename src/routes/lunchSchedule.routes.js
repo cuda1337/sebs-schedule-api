@@ -352,8 +352,8 @@ router.get('/available-clients', async (req, res) => {
     const amAssignments = await prisma.assignment.findMany({
       where: {
         day: dayOfWeek,
-        block: 'AM',
-        versionId: 1 // Main schedule
+        block: 'AM'
+        // Remove versionId filter to include all assignment versions
       },
       include: {
         client: true,
@@ -463,96 +463,28 @@ router.get('/available-clients', async (req, res) => {
     console.log(`   - Daily overrides: ${dailyOverrides.length}`);
     console.log(`   - Effective assignments: ${effectiveAssignments.size}`);
     
-    // If no clients found, add a helpful debug response
+    // If no clients found, provide helpful debug info
     if (result.availableClients.length === 0) {
-      console.log(`📋 No assignments found, checking if we have any clients at all...`);
+      console.log(`📋 No clients with AM assignments found for ${dayOfWeek} at ${location}`);
       
-      // Since there are no assignments, let's show all clients for the location for testing
-      const allClients = await prisma.client.findMany({
+      // Check if we have assignments for this day at other locations
+      const anyDayAssignments = await prisma.assignment.findMany({
         where: {
-          locations: {
-            has: location
-          }
+          day: dayOfWeek,
+          block: 'AM'
         },
-        orderBy: {
-          name: 'asc'
+        include: {
+          client: true
         }
       });
       
-      console.log(`📋 Found ${allClients.length} total clients for location ${location}`);
-      
-      if (allClients.length > 0) {
-        const testClients = allClients.map(client => ({
-          id: client.id,
-          name: client.name,
-          locations: client.locations || [],
-          hasAfternoonSession: false, // Default for testing
-          staff: []
-        }));
-        
-        result.availableClients = testClients;
-        console.log(`📋 Showing ${testClients.length} clients from location ${location} for testing (no assignments exist yet)`);
+      if (anyDayAssignments.length > 0) {
+        const locationsFound = [...new Set(anyDayAssignments.flatMap(a => a.client?.locations || []))];
+        console.log(`📋 Found ${anyDayAssignments.length} AM assignments for ${dayOfWeek} at locations: ${locationsFound.join(', ')}`);
+        console.log(`📋 To see clients in lunch schedule, make sure they have AM assignments at ${location} on ${dayOfWeek}`);
       } else {
-        // Check if we have any assignments for this day regardless of location
-        const anyDayAssignments = await prisma.assignment.findMany({
-          where: {
-            day: dayOfWeek,
-            block: 'AM',
-            versionId: 1
-          },
-          include: {
-            client: true,
-            staff: true
-          }
-        });
-        
-        console.log(`📋 Debug: Found ${anyDayAssignments.length} total AM assignments for ${dayOfWeek} (any location)`);
-        
-        // If we have assignments but not for this location, that's the issue
-        if (anyDayAssignments.length > 0) {
-          const locationsFound = [...new Set(anyDayAssignments.flatMap(a => a.client?.locations || []))];
-          console.log(`📋 Debug: Locations with assignments: ${locationsFound.join(', ')}`);
-          
-          // Include clients from specific location or if no location restriction
-          const locationFilteredClients = anyDayAssignments
-            .filter(a => a.client)
-            .filter(assignment => {
-              const clientLocations = assignment.client?.locations || [];
-              // Include if client has the target location OR if location filtering is 'all'
-              return clientLocations.includes(location) || 
-                     location === 'all' || 
-                     clientLocations.length === 0;
-            })
-            .map(assignment => ({
-              id: assignment.clientId,
-              name: assignment.client.name,
-              locations: assignment.client.locations || [],
-              hasAfternoonSession: false, // We'll check PM separately
-              staff: assignment.staff ? [assignment.staff.name] : []
-            }));
-            
-          // Check for PM sessions for these clients
-          if (locationFilteredClients.length > 0) {
-            const pmAssignments = await prisma.assignment.findMany({
-              where: {
-                day: dayOfWeek,
-                block: 'PM',
-                versionId: 1,
-                clientId: {
-                  in: locationFilteredClients.map(c => c.id)
-                }
-              }
-            });
-            
-            const clientsWithPM = new Set(pmAssignments.map(a => a.clientId));
-            locationFilteredClients.forEach(client => {
-              client.hasAfternoonSession = clientsWithPM.has(client.id);
-            });
-          }
-            
-          result.availableClients = locationFilteredClients;
-          console.log(`📋 Debug: Including ${locationFilteredClients.length} clients for location '${location}'`);
-        }
+        console.log(`📋 No AM assignments found for ${dayOfWeek} at any location`);
+        console.log(`📋 To use lunch schedule, first create AM assignments in the daily schedule`);
       }
     }
     
