@@ -88,7 +88,7 @@ router.get('/', async (req, res) => {
 // POST - Create or update lunch schedule
 router.post('/', async (req, res) => {
   try {
-    const { date, location, timeBlocks, createdBy } = req.body;
+    const { date, location, timeBlocks, createdBy, excludedClients } = req.body;
 
     if (!date || !location || !createdBy) {
       return res.status(400).json({ 
@@ -128,6 +128,7 @@ router.post('/', async (req, res) => {
         data: {
           lastModifiedBy: createdBy,
           lastModifiedAt: new Date(),
+          excludedClients: excludedClients ? excludedClients.map(client => client.id || client.clientId) : [],
           timeBlocks: {
             create: (timeBlocks || []).map(tb => ({
               startTime: tb.startTime || '12:30',
@@ -184,6 +185,7 @@ router.post('/', async (req, res) => {
           date: new Date(date),
           location: location,
           createdBy: createdBy,
+          excludedClients: excludedClients ? excludedClients.map(client => client.id || client.clientId) : [],
           timeBlocks: {
             create: (timeBlocks || []).map(tb => ({
               startTime: tb.startTime || '12:30',
