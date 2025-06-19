@@ -142,6 +142,8 @@ router.post('/', async (req, res) => {
                   roomLocation: group.roomLocation || '',
                   groupName: group.groupName || '',
                   color: group.color || '#3B82F6',
+                  startTime: group.startTime || '12:30',
+                  endTime: group.endTime || '13:00',
                   clients: {
                     create: (group.clients || []).map((client, index) => ({
                       clientId: client.clientId || client.id,
@@ -199,6 +201,8 @@ router.post('/', async (req, res) => {
                   roomLocation: group.roomLocation || '',
                   groupName: group.groupName || '',
                   color: group.color || '#3B82F6',
+                  startTime: group.startTime || '12:30',
+                  endTime: group.endTime || '13:00',
                   clients: {
                     create: (group.clients || []).map((client, index) => ({
                       clientId: client.clientId || client.id,
