@@ -336,6 +336,10 @@ model LunchGroup {
   groupName    String? // "Group 1", "Blue Group"
   color        String  @default("#3B82F6") // Group color for UI
   
+  // Group-specific times
+  startTime    String? // "12:30" - individual group start time
+  endTime      String? // "13:00" - individual group end time
+  
   // Relations
   timeBlock    LunchTimeBlock @relation(fields: [timeBlockId], references: [id], onDelete: Cascade)
   clients      LunchGroupClient[]

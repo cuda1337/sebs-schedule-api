@@ -442,4 +442,61 @@ router.post('/test-add-lunch-columns', async (req, res) => {
   }
 });
 
+// Add time fields to LunchGroup table
+router.post('/add-lunch-group-time-fields', async (req, res) => {
+  try {
+    console.log('🚀 Starting LunchGroup time fields migration...');
+
+    // Check if fields already exist by trying to query them
+    let fieldsExist = false;
+    try {
+      await prisma.$queryRaw`SELECT "startTime", "endTime" FROM "LunchGroup" LIMIT 1`;
+      fieldsExist = true;
+      console.log('✅ Time fields already exist in LunchGroup table');
+    } catch (error) {
+      console.log('ℹ️  Time fields do not exist yet, adding them...');
+    }
+
+    if (!fieldsExist) {
+      // Add the new columns
+      await prisma.$executeRaw`ALTER TABLE "LunchGroup" ADD COLUMN "startTime" TEXT`;
+      await prisma.$executeRaw`ALTER TABLE "LunchGroup" ADD COLUMN "endTime" TEXT`;
+      console.log('✅ Added startTime and endTime columns to LunchGroup table');
+
+      // Update existing groups with default times
+      const updateResult = await prisma.$executeRaw`
+        UPDATE "LunchGroup" SET "startTime" = '12:30', "endTime" = '13:00' 
+        WHERE "startTime" IS NULL OR "endTime" IS NULL
+      `;
+      console.log(`✅ Updated ${updateResult} existing groups with default times`);
+    }
+
+    // Verify the columns were added
+    const verifyColumns = await prisma.$queryRaw`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns 
+      WHERE table_name = 'LunchGroup'
+      AND column_name IN ('startTime', 'endTime')
+      ORDER BY ordinal_position
+    `;
+
+    res.json({
+      success: true,
+      message: fieldsExist 
+        ? 'Time fields already exist in LunchGroup table'
+        : 'Successfully added time fields to LunchGroup table',
+      fieldsExisted: fieldsExist,
+      verifiedColumns: verifyColumns
+    });
+
+  } catch (error) {
+    console.error('❌ Time fields migration failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Time fields migration failed',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
