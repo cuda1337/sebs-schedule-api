@@ -372,3 +372,29 @@ model LunchGroupClient {
   @@index([lunchGroupId])
   @@index([clientId])
 }
+
+model DailyScheduleState {
+  id             Int      @id @default(autoincrement())
+  date           DateTime @unique @db.Date
+  staffPositions Json     // StaffPosition[]
+  sessions       Json     // SessionState[]
+  clientStates   Json     // ClientState[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([date])
+}
+
+model SessionReview {
+  id                   Int      @id @default(autoincrement())
+  date                 DateTime @db.Date
+  sessionId            String
+  reviewedAt           DateTime
+  reviewedBy           String
+  sessionStateAtReview Json
+  createdAt            DateTime @default(now())
+  
+  @@unique([date, sessionId])
+  @@index([date])
+  @@index([reviewedAt])
+}

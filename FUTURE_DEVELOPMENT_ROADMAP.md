@@ -178,7 +178,73 @@ const sendFinalizationEmail = async (schedule, recipients) => {
 - Handle notification failures gracefully
 - Consider adding "View in App" links
 
-### 6. Advanced Reporting & Analytics
+### 6. Real-Time Cross-Component Updates
+**Status:** PLANNED - Quality of Life Enhancement
+**Purpose:** Automatically refresh lunch schedule when daily schedule cancellations are made
+
+**Current Behavior:**
+- User cancels client in daily schedule
+- User switches to lunch schedule tab
+- Cancelled client still appears in available clients list
+- User must manually refresh lunch schedule to see changes
+
+**Desired Behavior:**
+- User cancels client in daily schedule
+- Lunch schedule available clients list updates immediately
+- No manual refresh required
+
+**Technical Implementation Options:**
+
+#### Option 1: Custom Event System (Recommended - 15 min effort)
+```javascript
+// In daily schedule when cancellation is created:
+window.dispatchEvent(new CustomEvent('clientCancelled', { 
+  detail: { clientId, date, type: 'cancellation' } 
+}));
+
+// In lunch schedule component:
+useEffect(() => {
+  const handleCancellation = (event) => {
+    loadLunchSchedule(); // Refresh available clients
+  };
+  window.addEventListener('clientCancelled', handleCancellation);
+  return () => window.removeEventListener('clientCancelled', handleCancellation);
+}, []);
+```
+
+#### Option 2: Shared State Management (30 min effort)
+```javascript
+// Add to useStore.ts
+const useStore = create((set, get) => ({
+  dailyOverrides: [],
+  addDailyOverride: (override) => {
+    set(state => ({
+      dailyOverrides: [...state.dailyOverrides, override]
+    }));
+    // Trigger lunch schedule refresh
+    get().refreshLunchClients?.();
+  },
+  refreshLunchClients: null, // Set by lunch schedule component
+}));
+```
+
+#### Option 3: React Context Provider (45 min effort)
+```javascript
+// Create ScheduleContext that both components share
+// When daily schedule updates, context notifies lunch schedule
+```
+
+**Implementation Notes:**
+- Low priority enhancement (nice-to-have)
+- Current workaround: Manual refresh button works fine
+- Most users follow linear workflow (daily → lunch)
+- Event system is simplest and least intrusive
+
+**Files to Modify:**
+- `src/components/schedule/DailyScheduleEnhanced.tsx` - Emit events on cancellation
+- `src/components/schedule/EnhancedLunchSchedule.tsx` - Listen for events and refresh
+
+### 7. Advanced Reporting & Analytics
 **Status:** ✅ BASIC COMPLETE, Enhancement Opportunities
 **Completed:**
 - Staff call-out tracking with accurate hours
