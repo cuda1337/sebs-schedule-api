@@ -2,4 +2,4 @@ Trigger deployment for lunch schedule API fix
 Timestamp: 2025-06-18 Enhanced lunch schedule available-clients endpoint fix
 Timestamp: 2025-06-19 Add migration endpoint for lunch schedule override columns
 Timestamp: 2025-06-20 Add daily schedule API endpoints with database migration
-Timestamp: 2025-06-20 Fix migration with IF NOT EXISTS to handle existing tables
+Timestamp: 2025-06-20 Fix migration with IF NOT EXISTS to handle existing tablesTimestamp: 2025-06-20 Remove problematic migration folder - tables exist, state fixed
