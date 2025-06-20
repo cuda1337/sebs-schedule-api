@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "DailyScheduleState" (
+CREATE TABLE IF NOT EXISTS "DailyScheduleState" (
     "id" SERIAL NOT NULL,
     "date" DATE NOT NULL,
     "staffPositions" JSONB NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE "DailyScheduleState" (
 );
 
 -- CreateTable
-CREATE TABLE "SessionReview" (
+CREATE TABLE IF NOT EXISTS "SessionReview" (
     "id" SERIAL NOT NULL,
     "date" DATE NOT NULL,
     "sessionId" TEXT NOT NULL,
@@ -25,16 +25,16 @@ CREATE TABLE "SessionReview" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DailyScheduleState_date_key" ON "DailyScheduleState"("date");
+CREATE UNIQUE INDEX IF NOT EXISTS "DailyScheduleState_date_key" ON "DailyScheduleState"("date");
 
 -- CreateIndex
-CREATE INDEX "DailyScheduleState_date_idx" ON "DailyScheduleState"("date");
+CREATE INDEX IF NOT EXISTS "DailyScheduleState_date_idx" ON "DailyScheduleState"("date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SessionReview_date_sessionId_key" ON "SessionReview"("date", "sessionId");
+CREATE UNIQUE INDEX IF NOT EXISTS "SessionReview_date_sessionId_key" ON "SessionReview"("date", "sessionId");
 
 -- CreateIndex
-CREATE INDEX "SessionReview_date_idx" ON "SessionReview"("date");
+CREATE INDEX IF NOT EXISTS "SessionReview_date_idx" ON "SessionReview"("date");
 
 -- CreateIndex
-CREATE INDEX "SessionReview_reviewedAt_idx" ON "SessionReview"("reviewedAt");
+CREATE INDEX IF NOT EXISTS "SessionReview_reviewedAt_idx" ON "SessionReview"("reviewedAt");
