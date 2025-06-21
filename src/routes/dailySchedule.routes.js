@@ -124,9 +124,10 @@ router.post('/', async (req, res) => {
 
 // Helper function to build initial daily state from base schedule
 async function buildInitialDailyState(date, location) {
-  console.log('Building initial state for date:', date, 'location:', location);
-  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
-  console.log('Day of week:', dayOfWeek);
+  try {
+    console.log('🚀 Building initial state for date:', date, 'location:', location);
+    const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+    console.log('📅 Day of week:', dayOfWeek);
   
   // Get main schedule version
   const mainVersion = await prisma.scheduleVersion.findFirst({
@@ -234,6 +235,10 @@ async function buildInitialDailyState(date, location) {
 
   // Convert sessions map to array
   sessions.push(...sessionMap.values());
+  console.log(`✅ Created ${sessions.length} sessions from ${assignments.length} assignments`);
+  if (sessions.length > 0) {
+    console.log('Sample session:', sessions[0]);
+  }
 
   // Apply overrides to sessions
   for (const override of overrides) {
@@ -419,6 +424,19 @@ async function buildInitialDailyState(date, location) {
   });
 
   return initialState;
+  
+  } catch (error) {
+    console.error('❌ Error in buildInitialDailyState:', error);
+    console.error('Stack trace:', error.stack);
+    // Return empty state rather than crashing
+    return {
+      date,
+      staffPositions: [],
+      sessions: [],
+      clientStates: [],
+      auditLog: []
+    };
+  }
 }
 
 // Helper function to apply overrides to the state
