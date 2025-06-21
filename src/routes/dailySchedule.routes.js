@@ -262,7 +262,7 @@ async function buildInitialDailyState(date, location) {
       hasAM = true;
     } else if (staffAvailability[`${dayOfWeek}-AM`]) {
       hasAM = true;
-    } else if (assignments.some(a => a.staffId === staff.id && a.block === 'AM')) {
+    } else if (assignments.some(a => String(a.staffId) === String(staff.id) && a.block === 'AM')) {
       // If staff has AM assignments, they're available for AM
       hasAM = true;
     }
@@ -271,7 +271,7 @@ async function buildInitialDailyState(date, location) {
       hasPM = true;
     } else if (staffAvailability[`${dayOfWeek}-PM`]) {
       hasPM = true;
-    } else if (assignments.some(a => a.staffId === staff.id && a.block === 'PM')) {
+    } else if (assignments.some(a => String(a.staffId) === String(staff.id) && a.block === 'PM')) {
       // If staff has PM assignments, they're available for PM
       hasPM = true;
     }
@@ -334,7 +334,7 @@ async function buildInitialDailyState(date, location) {
       hasAM = true;
     } else if (clientAvailability[`${dayOfWeek}-AM`]) {
       hasAM = true;
-    } else if (assignments.some(a => a.clientId === client.id && a.block === 'AM')) {
+    } else if (assignments.some(a => String(a.clientId) === String(client.id) && a.block === 'AM')) {
       // If client has AM assignments, they're available for AM
       hasAM = true;
     }
@@ -343,7 +343,7 @@ async function buildInitialDailyState(date, location) {
       hasPM = true;
     } else if (clientAvailability[`${dayOfWeek}-PM`]) {
       hasPM = true;
-    } else if (assignments.some(a => a.clientId === client.id && a.block === 'PM')) {
+    } else if (assignments.some(a => String(a.clientId) === String(client.id) && a.block === 'PM')) {
       // If client has PM assignments, they're available for PM
       hasPM = true;
     }
