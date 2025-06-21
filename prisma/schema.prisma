@@ -379,6 +379,7 @@ model DailyScheduleState {
   staffPositions Json     // StaffPosition[]
   sessions       Json     // SessionState[]
   clientStates   Json     // ClientState[]
+  auditLog       Json     @default("[]") // AuditLogEntry[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
