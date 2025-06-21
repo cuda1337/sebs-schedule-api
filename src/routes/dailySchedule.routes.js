@@ -1499,6 +1499,21 @@ async function handleMoveClient(req, res, date) {
   return res.status(400).json({ error: 'Use assign-client action instead' });
 }
 
+// CLEANUP: Clear cached daily schedule states (safe - only clears cache, not real data)
+router.delete('/clear-cache', async (req, res) => {
+  try {
+    const deleted = await prisma.dailyScheduleState.deleteMany({});
+    console.log(`🗑️ Cleared ${deleted.count} cached daily schedule states`);
+    res.json({ 
+      message: `Cleared ${deleted.count} cached daily schedule states`,
+      note: 'Real schedule data (staff, clients, assignments) is preserved'
+    });
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // DEBUG: Simple endpoint to check if we can find assignments
 router.get('/debug', async (req, res) => {
   try {
