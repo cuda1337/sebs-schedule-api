@@ -246,148 +246,98 @@ async function buildInitialDailyState(date, location) {
     applyOverrideToState(sessions, staffPositions, clientStates, override);
   }
 
-  // Build staff positions (AM and PM separately)
-  for (const staff of allStaff) {
-    const staffAvailability = staff.availability || {};
-    console.log(`Staff ${staff.name} availability:`, staffAvailability);
+  // Build staff positions (simplified approach - just use assignment data)
+  console.log('🔨 Building staff positions from assignments...');
+  
+  // Create staff positions for everyone who has assignments this day
+  const staffWithAssignments = new Set();
+  
+  for (const assignment of assignments) {
+    const staffId = assignment.staffId.toString();
+    const timeSlot = assignment.block; // 'AM' or 'PM'
     
-    // Check for different availability formats
-    const dayAvailability = staffAvailability[dayOfWeek] || {};
+    // Skip if we already processed this staff for this time slot
+    const key = `${staffId}-${timeSlot}`;
+    if (staffWithAssignments.has(key)) continue;
+    staffWithAssignments.add(key);
     
-    // Handle different availability data structures
-    let hasAM = false;
-    let hasPM = false;
-    
-    if (dayAvailability.AM || dayAvailability.am) {
-      hasAM = true;
-    } else if (staffAvailability[`${dayOfWeek}-AM`]) {
-      hasAM = true;
-    } else if (assignments.some(a => String(a.staffId) === String(staff.id) && a.block === 'AM')) {
-      // If staff has AM assignments, they're available for AM
-      hasAM = true;
+    // Find the staff member
+    const staff = allStaff.find(s => s.id.toString() === staffId);
+    if (!staff) {
+      console.log(`⚠️ Staff ${staffId} not found in staff list`);
+      continue;
     }
     
-    if (dayAvailability.PM || dayAvailability.pm) {
-      hasPM = true;
-    } else if (staffAvailability[`${dayOfWeek}-PM`]) {
-      hasPM = true;
-    } else if (assignments.some(a => String(a.staffId) === String(staff.id) && a.block === 'PM')) {
-      // If staff has PM assignments, they're available for PM
-      hasPM = true;
-    }
+    // Check if this staff is assigned in sessions
+    const isAssigned = sessions.some(s => 
+      s.timeSlot === timeSlot && s.staffIds.includes(staffId)
+    );
     
-    console.log(`Staff ${staff.name} - AM: ${hasAM}, PM: ${hasPM}`);
+    const assignedSession = sessions.find(s => 
+      s.timeSlot === timeSlot && s.staffIds.includes(staffId)
+    );
     
-    // AM Position
-    if (hasAM) {
-      const amAssigned = sessions.some(s => 
-        s.timeSlot === 'AM' && s.staffIds.includes(staff.id.toString())
-      );
-      
-      staffPositions.push({
-        staffId: staff.id.toString(),
-        staffName: staff.name,
-        shift: 'AM',
-        position: amAssigned 
-          ? { type: 'assigned', sessionId: sessions.find(s => 
-              s.timeSlot === 'AM' && s.staffIds.includes(staff.id.toString())
-            )?.sessionId }
-          : (staff.role === 'In Training' ? { type: 'training' } : { type: 'available' }),
-        location: staff.locations[0] || 'Unknown',
-        originalLocation: staff.locations[0] || 'Unknown'
-      });
-    }
-
-    // PM Position
-    if (hasPM) {
-      const pmAssigned = sessions.some(s => 
-        s.timeSlot === 'PM' && s.staffIds.includes(staff.id.toString())
-      );
-      
-      staffPositions.push({
-        staffId: staff.id.toString(),
-        staffName: staff.name,
-        shift: 'PM',
-        position: pmAssigned 
-          ? { type: 'assigned', sessionId: sessions.find(s => 
-              s.timeSlot === 'PM' && s.staffIds.includes(staff.id.toString())
-            )?.sessionId }
-          : (staff.role === 'In Training' ? { type: 'training' } : { type: 'available' }),
-        location: staff.locations[0] || 'Unknown',
-        originalLocation: staff.locations[0] || 'Unknown'
-      });
-    }
+    staffPositions.push({
+      staffId: staffId,
+      staffName: staff.name,
+      shift: timeSlot,
+      position: isAssigned 
+        ? { type: 'assigned', sessionId: assignedSession?.sessionId }
+        : (staff.role === 'In Training' ? { type: 'training' } : { type: 'available' }),
+      location: staff.locations[0] || 'Unknown',
+      originalLocation: staff.locations[0] || 'Unknown'
+    });
+    
+    console.log(`✅ Added staff position: ${staff.name} ${timeSlot}`);
   }
+  
+  console.log(`🔨 Created ${staffPositions.length} staff positions from assignments`)
 
-  // Build client states
-  for (const client of allClients) {
-    const clientAvailability = client.availability || {};
-    console.log(`Client ${client.name} availability:`, clientAvailability);
+  // Build client states (simplified approach - just use assignment data)
+  console.log('🔨 Building client states from assignments...');
+  
+  // Create client states for everyone who has assignments this day
+  const clientsWithAssignments = new Set();
+  
+  for (const assignment of assignments) {
+    const clientId = assignment.clientId.toString();
+    const timeSlot = assignment.block; // 'AM' or 'PM'
     
-    const dayAvailability = clientAvailability[dayOfWeek] || {};
+    // Skip if we already processed this client for this time slot
+    const key = `${clientId}-${timeSlot}`;
+    if (clientsWithAssignments.has(key)) continue;
+    clientsWithAssignments.add(key);
     
-    // Handle different availability data structures
-    let hasAM = false;
-    let hasPM = false;
-    
-    if (dayAvailability.AM || dayAvailability.am) {
-      hasAM = true;
-    } else if (clientAvailability[`${dayOfWeek}-AM`]) {
-      hasAM = true;
-    } else if (assignments.some(a => String(a.clientId) === String(client.id) && a.block === 'AM')) {
-      // If client has AM assignments, they're available for AM
-      hasAM = true;
+    // Find the client
+    const client = allClients.find(c => c.id.toString() === clientId);
+    if (!client) {
+      console.log(`⚠️ Client ${clientId} not found in client list`);
+      continue;
     }
     
-    if (dayAvailability.PM || dayAvailability.pm) {
-      hasPM = true;
-    } else if (clientAvailability[`${dayOfWeek}-PM`]) {
-      hasPM = true;
-    } else if (assignments.some(a => String(a.clientId) === String(client.id) && a.block === 'PM')) {
-      // If client has PM assignments, they're available for PM
-      hasPM = true;
-    }
+    // Check if this client is assigned in sessions
+    const isAssigned = sessions.some(s => 
+      s.timeSlot === timeSlot && s.clientIds.includes(clientId)
+    );
     
-    console.log(`Client ${client.name} - AM: ${hasAM}, PM: ${hasPM}`);
+    const assignedSession = sessions.find(s => 
+      s.timeSlot === timeSlot && s.clientIds.includes(clientId)
+    );
     
-    // Check AM availability
-    if (hasAM) {
-      const amAssigned = sessions.some(s => 
-        s.timeSlot === 'AM' && s.clientIds.includes(client.id.toString())
-      );
-      
-      clientStates.push({
-        clientId: client.id.toString(),
-        clientName: client.name,
-        shift: 'AM',
-        position: amAssigned 
-          ? { type: 'assigned', sessionId: sessions.find(s => 
-              s.timeSlot === 'AM' && s.clientIds.includes(client.id.toString())
-            )?.sessionId }
-          : { type: 'unassigned' },
-        location: client.locations[0] || 'Unknown'
-      });
-    }
+    clientStates.push({
+      clientId: clientId,
+      clientName: client.name,
+      shift: timeSlot,
+      position: isAssigned 
+        ? { type: 'assigned', sessionId: assignedSession?.sessionId }
+        : { type: 'unassigned' },
+      location: client.locations[0] || 'Unknown'
+    });
     
-    // Check PM availability
-    if (hasPM) {
-      const pmAssigned = sessions.some(s => 
-        s.timeSlot === 'PM' && s.clientIds.includes(client.id.toString())
-      );
-      
-      clientStates.push({
-        clientId: client.id.toString(),
-        clientName: client.name,
-        shift: 'PM',
-        position: pmAssigned 
-          ? { type: 'assigned', sessionId: sessions.find(s => 
-              s.timeSlot === 'PM' && s.clientIds.includes(client.id.toString())
-            )?.sessionId }
-          : { type: 'unassigned' },
-        location: client.locations[0] || 'Unknown'
-      });
-    }
+    console.log(`✅ Added client state: ${client.name} ${timeSlot}`);
   }
+  
+  console.log(`🔨 Created ${clientStates.length} client states from assignments`)
 
   const initialState = {
     date,
