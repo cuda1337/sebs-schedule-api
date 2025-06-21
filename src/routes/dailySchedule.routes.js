@@ -331,7 +331,54 @@ async function handleCreateSession(req, res, date) {
 }
 
 async function handleAddStaffToSession(req, res, date) {
-  return res.json({ message: 'Staff added to session' });
+  try {
+    const { sessionId, staffId } = req.body;
+    console.log('Adding staff', staffId, 'to session', sessionId, 'on date', date);
+    
+    // Get the current daily schedule state
+    let dailyState = await prisma.dailyScheduleState.findUnique({
+      where: { date: new Date(date) }
+    });
+
+    if (!dailyState) {
+      return res.status(404).json({ error: 'Daily schedule not found for this date' });
+    }
+
+    // Parse the current sessions
+    let sessions = dailyState.sessions || [];
+    
+    // Find the target session
+    const sessionIndex = sessions.findIndex(s => s.sessionId === sessionId);
+    if (sessionIndex === -1) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Add staff to session if not already present
+    const session = sessions[sessionIndex];
+    if (!session.staffIds.includes(staffId)) {
+      session.staffIds.push(staffId);
+      session.lastModified = new Date();
+      session.changeType = 'staff_assignment';
+      
+      console.log('Updated session:', session);
+    }
+
+    // Update the database
+    await prisma.dailyScheduleState.update({
+      where: { date: new Date(date) },
+      data: {
+        sessions: sessions,
+        updatedAt: new Date()
+      }
+    });
+
+    console.log('Staff successfully added to session in database');
+    return res.json({ message: 'Staff added to session', session: session });
+    
+  } catch (error) {
+    console.error('Error adding staff to session:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }
 
 async function handleRemoveStaffFromSession(req, res, date) {
@@ -339,7 +386,54 @@ async function handleRemoveStaffFromSession(req, res, date) {
 }
 
 async function handleAddClientToSession(req, res, date) {
-  return res.json({ message: 'Client added to session' });
+  try {
+    const { sessionId, clientId } = req.body;
+    console.log('Adding client', clientId, 'to session', sessionId, 'on date', date);
+    
+    // Get the current daily schedule state
+    let dailyState = await prisma.dailyScheduleState.findUnique({
+      where: { date: new Date(date) }
+    });
+
+    if (!dailyState) {
+      return res.status(404).json({ error: 'Daily schedule not found for this date' });
+    }
+
+    // Parse the current sessions
+    let sessions = dailyState.sessions || [];
+    
+    // Find the target session
+    const sessionIndex = sessions.findIndex(s => s.sessionId === sessionId);
+    if (sessionIndex === -1) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Add client to session if not already present
+    const session = sessions[sessionIndex];
+    if (!session.clientIds.includes(clientId)) {
+      session.clientIds.push(clientId);
+      session.lastModified = new Date();
+      session.changeType = 'client_assignment';
+      
+      console.log('Updated session:', session);
+    }
+
+    // Update the database
+    await prisma.dailyScheduleState.update({
+      where: { date: new Date(date) },
+      data: {
+        sessions: sessions,
+        updatedAt: new Date()
+      }
+    });
+
+    console.log('Client successfully added to session in database');
+    return res.json({ message: 'Client added to session', session: session });
+    
+  } catch (error) {
+    console.error('Error adding client to session:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }
 
 async function handleRemoveClientFromSession(req, res, date) {
