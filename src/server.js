@@ -81,6 +81,12 @@ app.use('/api/migrate', require('./routes/migrate.routes'));
 // Simple lunch schedule routes (BEFORE auth middleware for testing)
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
 
+// Daily schedule routes (BEFORE auth middleware for testing)
+app.use('/api/daily-schedule', require('./routes/dailySchedule.routes'));
+
+// Session reviews routes (BEFORE auth middleware for testing)
+app.use('/api/session-reviews', require('./routes/sessionReviews.routes'));
+
 // Debug database schema routes (BEFORE auth middleware - no authentication required)
 app.use('/api/debug-database', require('./routes/debug-database.routes'));
 
