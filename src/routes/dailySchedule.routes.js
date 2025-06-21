@@ -20,6 +20,14 @@ router.get('/', async (req, res) => {
     if (!dailyState) {
       // If no daily state exists, build it from base schedule
       dailyState = await buildInitialDailyState(date, location);
+    } else {
+      // Transform database record to proper format
+      dailyState = {
+        date: date,
+        staffPositions: dailyState.staffPositions || [],
+        sessions: dailyState.sessions || [],
+        clientStates: dailyState.clientStates || []
+      };
     }
 
     // Filter by location if specified
