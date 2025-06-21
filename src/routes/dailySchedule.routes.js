@@ -363,16 +363,24 @@ async function buildInitialDailyState(date, location) {
   }
 
   // Save to database
-  await prisma.dailyScheduleState.create({
-    data: {
-      date: new Date(date),
-      staffPositions: initialState.staffPositions,
-      sessions: initialState.sessions,
-      clientStates: initialState.clientStates,
-      auditLog: []
-    }
-  });
+  console.log('💾 Attempting to save to database...');
+  try {
+    await prisma.dailyScheduleState.create({
+      data: {
+        date: new Date(date),
+        staffPositions: initialState.staffPositions,
+        sessions: initialState.sessions,
+        clientStates: initialState.clientStates,
+        auditLog: []
+      }
+    });
+    console.log('✅ Successfully saved to database');
+  } catch (saveError) {
+    console.error('❌ Database save failed:', saveError);
+    // Continue anyway and return the data even if save fails
+  }
 
+  console.log('🚀 Returning initial state with', initialState.staffPositions.length, 'staff positions');
   return initialState;
   
   } catch (error) {
