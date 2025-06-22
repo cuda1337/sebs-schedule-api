@@ -25,6 +25,26 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Database health check endpoint
+app.get('/db-health', async (_req, res) => {
+  try {
+    // Check if ScheduleGroup table exists
+    await prisma.$queryRaw`SELECT 1 FROM "ScheduleGroup" LIMIT 1`;
+    res.json({ 
+      status: 'ok', 
+      message: 'ScheduleGroup table exists',
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'ScheduleGroup table does not exist or database error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString() 
+    });
+  }
+});
+
 // Import routes
 import staffRoutes from './routes/staff.routes';
 import webhookRoutes from './routes/webhook.routes';
