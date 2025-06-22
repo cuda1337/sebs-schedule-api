@@ -63,6 +63,26 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Database health check endpoint
+app.get('/db-health', async (req, res) => {
+  try {
+    // Check if ScheduleGroup table exists
+    await prisma.$queryRaw`SELECT 1 FROM "ScheduleGroup" LIMIT 1`;
+    res.json({ 
+      status: 'ok', 
+      message: 'ScheduleGroup table exists',
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'ScheduleGroup table does not exist or database error',
+      error: error.message,
+      timestamp: new Date().toISOString() 
+    });
+  }
+});
+
 // Auth routes (no authentication required)
 app.use('/api/auth', authRoutes);
 
@@ -80,6 +100,9 @@ app.use('/api/migrate', require('./routes/migrate.routes'));
 
 // Simple lunch schedule routes (BEFORE auth middleware for testing)
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
+
+// Schedule groups routes (BEFORE auth middleware for testing)  
+app.use('/api/schedule-groups', require('./routes/scheduleGroup.routes'));
 
 // Debug database schema routes (BEFORE auth middleware - no authentication required)
 app.use('/api/debug-database', require('./routes/debug-database.routes'));
