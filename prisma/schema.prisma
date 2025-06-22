@@ -372,3 +372,39 @@ model LunchGroupClient {
   @@index([lunchGroupId])
   @@index([clientId])
 }
+
+model ScheduleGroup {
+  id          Int      @id @default(autoincrement())
+  name        String   // Group name
+  timeBlock   String   // "AM" or "PM"
+  date        DateTime @db.Date // Date this group applies to
+  staffId     Int      // Staff member running the group
+  location    String   // Group location
+  maxClients  Int      @default(6) // Maximum clients in group
+  createdBy   String   @default("user")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  members     ScheduleGroupMember[]
+  
+  @@index([date, timeBlock])
+  @@index([staffId])
+  @@index([date, location])
+}
+
+model ScheduleGroupMember {
+  id                Int      @id @default(autoincrement())
+  groupId           Int
+  clientId          Int
+  originalStaffId   Int?     // Staff client was originally assigned to
+  originalSessionId Int?     // Original session ID if applicable
+  createdAt         DateTime @default(now())
+  
+  // Relations
+  group             ScheduleGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, clientId]) // Prevent duplicate client assignments
+  @@index([groupId])
+  @@index([clientId])
+}

@@ -28,12 +28,14 @@ app.get('/health', (_req, res) => {
 // Import routes
 import staffRoutes from './routes/staff.routes';
 import webhookRoutes from './routes/webhook.routes';
+import scheduleGroupRoutes from './routes/scheduleGroup.routes';
 // import clientRoutes from './routes/client.routes';
 // import assignmentRoutes from './routes/assignment.routes';
 
 // Use routes
 app.use('/api/staff', staffRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/schedule-groups', scheduleGroupRoutes);
 // app.use('/api/clients', clientRoutes);
 // app.use('/api/assignments', assignmentRoutes);
 
