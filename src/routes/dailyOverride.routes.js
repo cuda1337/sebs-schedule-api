@@ -98,6 +98,7 @@ router.post('/daily-overrides', async (req, res) => {
       originalClientId,
       newStaffId,
       newClientId,
+      newClientName, // Add support for one-time session client names
       reason,
       createdBy
     } = req.body;
@@ -110,9 +111,9 @@ router.post('/daily-overrides', async (req, res) => {
     }
     
     // Validate type
-    if (!['callout', 'cancellation', 'reassignment', 'add_session', 'delete_session'].includes(type)) {
+    if (!['callout', 'cancellation', 'reassignment', 'add_session', 'delete_session', 'one-time-session'].includes(type)) {
       return res.status(400).json({ 
-        error: 'Invalid type. Must be: callout, cancellation, reassignment, add_session, or delete_session' 
+        error: 'Invalid type. Must be: callout, cancellation, reassignment, add_session, delete_session, or one-time-session' 
       });
     }
     
@@ -137,21 +138,33 @@ router.post('/daily-overrides', async (req, res) => {
         error: 'Both original staff and client IDs required for delete_session' 
       });
     }
+    if (type === 'one-time-session' && !newClientName) {
+      return res.status(400).json({ 
+        error: 'Client name required for one-time session' 
+      });
+    }
     
     // Create the override
+    const overrideData = {
+      date: new Date(date),
+      type,
+      day,
+      block,
+      originalStaffId: originalStaffId || null,
+      originalClientId: originalClientId || null,
+      newStaffId: newStaffId || null,
+      newClientId: newClientId || null,
+      reason,
+      createdBy: createdBy || 'system'
+    };
+
+    // For one-time sessions, store client name in reason with special format
+    if (type === 'one-time-session') {
+      overrideData.reason = `One-time session|${newClientName}|${reason || 'One-time session added'}`;
+    }
+
     const override = await req.prisma.dailyOverride.create({
-      data: {
-        date: new Date(date),
-        type,
-        day,
-        block,
-        originalStaffId: originalStaffId || null,
-        originalClientId: originalClientId || null,
-        newStaffId: newStaffId || null,
-        newClientId: newClientId || null,
-        reason,
-        createdBy: createdBy || 'system'
-      },
+      data: overrideData,
       include: {
         originalStaff: true,
         originalClient: true,
