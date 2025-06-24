@@ -96,6 +96,7 @@ model Assignment {
   isGroup   Boolean  @default(false) // True if this is part of a group session
   groupSessionId Int? // References GroupSession if part of group
   plannedDate DateTime? // For planned assignments, when they should take effect
+  location  String?  // Location where session takes place (nullable for backwards compatibility)
   
   staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
   client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)

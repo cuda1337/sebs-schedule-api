@@ -613,6 +613,27 @@ app.get('/api/assignments', async (req, res) => {
       }
     });
     
+    // Debug logging to check location field
+    console.log('Sample assignment from DB:', assignments.length > 0 ? {
+      id: assignments[0].id,
+      location: assignments[0].location,
+      hasLocation: 'location' in assignments[0],
+      allFields: Object.keys(assignments[0])
+    } : 'No assignments');
+    
+    // Debug - find Emma/HeHa assignment
+    const emmaAssignment = assignments.find(a => 
+      a.staff?.name === 'Emma Jarnigan' && a.client?.name === 'HeHa'
+    );
+    if (emmaAssignment) {
+      console.log('Emma/HeHa assignment from DB:', {
+        id: emmaAssignment.id,
+        location: emmaAssignment.location,
+        day: emmaAssignment.day,
+        block: emmaAssignment.block
+      });
+    }
+    
     // Calculate staff counts for each client at each time slot
     const staffCounts = {};
     for (const assignment of assignments) {
@@ -652,7 +673,12 @@ app.get('/api/assignments', async (req, res) => {
 
 app.post('/api/assignments', async (req, res) => {
   try {
-    const { day, block, staffId, clientId, versionId, isGroup, groupSessionId, plannedDate, overrideClientConflict } = req.body;
+    const { day, block, staffId, clientId, versionId, isGroup, groupSessionId, plannedDate, overrideClientConflict, location } = req.body;
+    
+    // Debug logging
+    console.log('Creating assignment with data:', {
+      day, block, staffId, clientId, location, versionId
+    });
     
     // Get version or default to main
     let version = versionId ? parseInt(versionId) : null;
@@ -738,13 +764,22 @@ app.post('/api/assignments', async (req, res) => {
         versionId: version,
         isGroup: isGroup || false,
         groupSessionId,
-        ...(plannedDate && { plannedDate })
+        ...(plannedDate && { plannedDate }),
+        ...(location && { location })
       },
       include: {
         staff: true,
         client: true,
         groupSession: true
       }
+    });
+    
+    // Debug logging
+    console.log('Created assignment:', {
+      id: assignment.id,
+      location: assignment.location,
+      day: assignment.day,
+      block: assignment.block
     });
     
     // Create change log entry for main schedule changes
@@ -1252,6 +1287,37 @@ app.use('/api', supervisorRoutes);
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
+
+// Test endpoint to check if location column exists
+app.get('/api/test-location-column', async (req, res) => {
+  try {
+    // Check if location column exists in Assignment table
+    const columnCheck = await prisma.$queryRaw`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'Assignment' 
+      AND column_name = 'location'
+    `;
+    
+    // Get a sample assignment to see its structure
+    const sampleAssignment = await prisma.assignment.findFirst();
+    
+    res.json({ 
+      message: 'Location column check', 
+      timestamp: new Date(),
+      locationColumnExists: columnCheck.length > 0,
+      columnCheckResult: columnCheck,
+      sampleAssignmentKeys: sampleAssignment ? Object.keys(sampleAssignment) : [],
+      hasLocationKey: sampleAssignment ? 'location' in sampleAssignment : false
+    });
+  } catch (error) {
+    res.json({ 
+      message: 'Error checking location column', 
+      timestamp: new Date(),
+      error: error.message 
+    });
+  }
+});
 
 // Start server
 const startServer = async () => {
