@@ -255,6 +255,37 @@ app.post('/api/admin/restart-server', async (req, res) => {
   }
 });
 
+// Test endpoint to check if location column exists (PUBLIC - no auth required)
+app.get('/api/public/test-location-column', async (req, res) => {
+  try {
+    // Check if location column exists in Assignment table
+    const columnCheck = await prisma.$queryRaw`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'Assignment' 
+      AND column_name = 'location'
+    `;
+    
+    // Get a sample assignment to see its structure
+    const sampleAssignment = await prisma.assignment.findFirst();
+    
+    res.json({ 
+      message: 'Location column check', 
+      timestamp: new Date(),
+      locationColumnExists: columnCheck.length > 0,
+      columnCheckResult: columnCheck,
+      sampleAssignmentKeys: sampleAssignment ? Object.keys(sampleAssignment) : [],
+      hasLocationKey: sampleAssignment ? 'location' in sampleAssignment : false
+    });
+  } catch (error) {
+    res.json({ 
+      message: 'Error checking location column', 
+      timestamp: new Date(),
+      error: error.message 
+    });
+  }
+});
+
 // Authentication middleware
 app.use(authMiddleware);
 
@@ -1287,37 +1318,6 @@ app.use('/api', supervisorRoutes);
 if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
-
-// Test endpoint to check if location column exists
-app.get('/api/test-location-column', async (req, res) => {
-  try {
-    // Check if location column exists in Assignment table
-    const columnCheck = await prisma.$queryRaw`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'Assignment' 
-      AND column_name = 'location'
-    `;
-    
-    // Get a sample assignment to see its structure
-    const sampleAssignment = await prisma.assignment.findFirst();
-    
-    res.json({ 
-      message: 'Location column check', 
-      timestamp: new Date(),
-      locationColumnExists: columnCheck.length > 0,
-      columnCheckResult: columnCheck,
-      sampleAssignmentKeys: sampleAssignment ? Object.keys(sampleAssignment) : [],
-      hasLocationKey: sampleAssignment ? 'location' in sampleAssignment : false
-    });
-  } catch (error) {
-    res.json({ 
-      message: 'Error checking location column', 
-      timestamp: new Date(),
-      error: error.message 
-    });
-  }
-});
 
 // Start server
 const startServer = async () => {
