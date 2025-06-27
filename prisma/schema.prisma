@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
 }
 
@@ -11,103 +8,92 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NEW: User model for authentication
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  password     String   // Hashed with bcrypt
-  name         String   // Display name
-  role         String   @default("bcba") // "admin", "bcba"
-  isActive     Boolean  @default(true)
-  lastLogin    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Track what users create/modify
-  changeLogs   ChangeLog[] @relation("UserChangeLogs")
-  
-  @@index([email])
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    @default("staff")
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
 }
 
 model Staff {
-  id           Int              @id @default(autoincrement())
-  name         String
-  locations    String[]         // Array of location names
-  availability Json             // {"Monday-AM": true, "Monday-PM": false, ...}
-  role         String?          // "RBT", "BCBA", "In Training"
-  testDate     String?          // Test date for "In Training" staff
-  active       Boolean          @default(true)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  
-  assignments       Assignment[]
-  groupSessions     GroupSession[]
-  changeLogs        ChangeLog[]     @relation("ChangeLogStaff")
-  originalOverrides DailyOverride[] @relation("OriginalStaff")
-  newOverrides      DailyOverride[] @relation("NewStaff")
+  id                    Int                  @id @default(autoincrement())
+  name                  String
+  locations             String[]
+  availability          Json
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  role                  String?
+  testDate              String?
+  active                Boolean              @default(true)
+  assignments           Assignment[]
+  changeLogs            ChangeLog[]          @relation("ChangeLogStaff")
+  newOverrides          DailyOverride[]      @relation("NewStaff")
+  originalOverrides     DailyOverride[]      @relation("OriginalStaff")
+  groupSessions         GroupSession[]
   originalReassignments ReassignmentNeeded[] @relation("ReassignmentOriginalStaff")
   plannedReassignments  ReassignmentNeeded[] @relation("ReassignmentPlannedStaff")
+  dailyAssignmentStates DailyAssignmentState[]
 }
 
 model Client {
-  id              Int              @id @default(autoincrement())
-  name            String
-  locations       String[]
-  authorizedHours Float            @default(0)
-  availability    Json
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
-  assignments      Assignment[]
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  locations           String[]
+  authorizedHours     Float                @default(0)
+  availability        Json
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  assignments         Assignment[]
+  changeLogs          ChangeLog[]          @relation("ChangeLogClient")
+  supervisorHistory   ClientSupervisor[]
+  newOverrides        DailyOverride[]      @relation("NewClient")
+  originalOverrides   DailyOverride[]      @relation("OriginalClient")
   groupSessionClients GroupSessionClient[]
-  lunchGroupClients LunchGroupClient[]
-  changeLogs       ChangeLog[]     @relation("ChangeLogClient")
-  originalOverrides DailyOverride[] @relation("OriginalClient")
-  newOverrides      DailyOverride[] @relation("NewClient")
-  supervisorHistory ClientSupervisor[]
+  lunchGroupClients   LunchGroupClient[]
   reassignmentsNeeded ReassignmentNeeded[]
 }
 
 model ScheduleVersion {
-  id          Int      @id @default(autoincrement())
-  name        String   // e.g., "Main", "Hypothetical - Option A", "Planned - Jan 2025"
-  type        String   // "main", "hypothetical", "planned"
-  status      String   @default("active") // "active", "archived", "committed"
-  startDate   DateTime? // For planned schedules
-  description String?
-  createdBy   String   @default("system")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  assignments  Assignment[]
+  id            Int            @id @default(autoincrement())
+  name          String
+  type          String
+  status        String         @default("active")
+  startDate     DateTime?
+  description   String?
+  createdBy     String         @default("system")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  assignments   Assignment[]
+  changeLogs    ChangeLog[]
   groupSessions GroupSession[]
-  changeLogs   ChangeLog[]
-  
+
   @@index([type, status])
 }
 
 model Assignment {
-  id        Int      @id @default(autoincrement())
-  day       String   // "Monday", "Tuesday", etc.
-  block     String   // "AM" or "PM"
-  staffId   Int
-  clientId  Int
-  versionId Int      @default(1) // Links to ScheduleVersion (default to main)
-  isGroup   Boolean  @default(false) // True if this is part of a group session
-  groupSessionId Int? // References GroupSession if part of group
-  plannedDate DateTime? // For planned assignments, when they should take effect
-  location  String?  // Location where session takes place (nullable for backwards compatibility)
-  
-  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  version   ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  groupSession GroupSession? @relation(fields: [groupSessionId], references: [id], onDelete: SetNull)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // For group sessions, multiple clients can have same staff/day/block
-  // For individual sessions, enforce uniqueness
+  id             Int             @id @default(autoincrement())
+  day            String
+  block          String
+  staffId        Int
+  clientId       Int
+  createdAt      DateTime        @default(now())
+  groupSessionId Int?
+  isGroup        Boolean         @default(false)
+  updatedAt      DateTime        @updatedAt
+  versionId      Int             @default(1)
+  plannedDate    DateTime?
+  location       String?
+  client         Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  groupSession   GroupSession?   @relation(fields: [groupSessionId], references: [id])
+  staff          Staff           @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  version        ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  dailyAssignmentStates DailyAssignmentState[]
+
   @@index([versionId, day, block, staffId])
   @@index([versionId, day, block, clientId])
   @@index([staffId])
@@ -115,22 +101,20 @@ model Assignment {
 }
 
 model GroupSession {
-  id        Int      @id @default(autoincrement())
-  day       String   // "Monday", "Tuesday", etc.
-  block     String   // "AM" or "PM"
-  staffId   Int
-  versionId Int      @default(1)
-  location  String   // All clients must be at same location
-  maxSize   Int      @default(4) // Maximum clients in group
-  
-  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  version   ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  clients   GroupSessionClient[]
+  id          Int                  @id @default(autoincrement())
+  day         String
+  block       String
+  staffId     Int
+  versionId   Int                  @default(1)
+  location    String
+  maxSize     Int                  @default(4)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
   assignments Assignment[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  staff       Staff                @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  version     ScheduleVersion      @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  clients     GroupSessionClient[]
+
   @@unique([versionId, day, block, staffId])
   @@index([versionId, day, block])
 }
@@ -139,50 +123,39 @@ model GroupSessionClient {
   id             Int          @id @default(autoincrement())
   groupSessionId Int
   clientId       Int
-  
-  groupSession   GroupSession @relation(fields: [groupSessionId], references: [id], onDelete: Cascade)
   client         Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+  groupSession   GroupSession @relation(fields: [groupSessionId], references: [id], onDelete: Cascade)
+
   @@unique([groupSessionId, clientId])
   @@index([clientId])
 }
 
 model ChangeLog {
-  id               Int      @id @default(autoincrement())
-  versionId        Int      // Which version this change belongs to
-  changeType       String   // "assignment_added", "assignment_removed", "group_session_created", etc.
-  entityType       String   // "assignment", "group_session", "staff", "client"
-  entityId         Int?     // ID of the entity changed
-  
-  // Assignment specific fields
+  id               Int             @id @default(autoincrement())
+  versionId        Int
+  changeType       String
+  entityType       String
+  entityId         Int?
   day              String?
   block            String?
   staffId          Int?
   clientId         Int?
-  
-  // Change details
-  previousValue    Json?    // Previous state
-  newValue         Json?    // New state
-  
-  // Review tracking
-  reviewed         Boolean  @default(false)
+  previousValue    Json?
+  newValue         Json?
+  committedToMain  Boolean         @default(false)
+  committedAt      DateTime?
+  createdBy        String          @default("system")
+  createdAt        DateTime        @default(now())
+  notes            String?
+  reviewed         Boolean         @default(false)
   reviewedAt       DateTime?
   reviewedBy       String?
-  reviewedByUserId Int?     // NEW: Link to User who reviewed
-  
-  // Metadata
-  committedToMain  Boolean  @default(false)
-  committedAt      DateTime?
-  createdBy        String   @default("system")
-  createdByUserId  Int?     // NEW: Link to User who created
-  createdAt        DateTime @default(now())
-  notes            String?
-  
+  reviewedByUserId Int?
+  createdByUserId  Int?
+  client           Client?         @relation("ChangeLogClient", fields: [clientId], references: [id])
+  staff            Staff?          @relation("ChangeLogStaff", fields: [staffId], references: [id])
   version          ScheduleVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  staff            Staff?   @relation("ChangeLogStaff", fields: [staffId], references: [id], onDelete: SetNull)
-  client           Client?  @relation("ChangeLogClient", fields: [clientId], references: [id], onDelete: SetNull)
-  createdByUser    User?    @relation("UserChangeLogs", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  
+
   @@index([versionId, committedToMain])
   @@index([createdAt])
   @@index([staffId])
@@ -191,82 +164,65 @@ model ChangeLog {
 
 model DailyOverride {
   id               Int      @id @default(autoincrement())
-  date             DateTime @db.Date  // The specific date this override applies to
-  type             String   // "callout", "cancellation", "reassignment"
-  
-  // Original assignment info (what's being overridden)
-  day              String   // Day of week from the assignment
-  block            String   // Time block from the assignment
+  date             DateTime @db.Date
+  type             String
+  day              String
+  block            String
   originalStaffId  Int?
   originalClientId Int?
-  
-  // Override details
-  newStaffId       Int?     // For reassignments
-  newClientId      Int?     // For reassignments
-  reason           String   // Why the override happened
-  hours            Float?   // Actual hours for this override (especially for callouts)
-  
-  // Metadata
-  status           String   @default("active") // "active", "expired"
+  newStaffId       Int?
+  newClientId      Int?
+  reason           String
+  status           String   @default("active")
   createdBy        String   @default("system")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  
-  // Relations
-  originalStaff    Staff?   @relation("OriginalStaff", fields: [originalStaffId], references: [id], onDelete: SetNull)
-  originalClient   Client?  @relation("OriginalClient", fields: [originalClientId], references: [id], onDelete: SetNull)
-  newStaff         Staff?   @relation("NewStaff", fields: [newStaffId], references: [id], onDelete: SetNull)
-  newClient        Client?  @relation("NewClient", fields: [newClientId], references: [id], onDelete: SetNull)
-  
+  hours            Float?
+  newClient        Client?  @relation("NewClient", fields: [newClientId], references: [id])
+  newStaff         Staff?   @relation("NewStaff", fields: [newStaffId], references: [id])
+  originalClient   Client?  @relation("OriginalClient", fields: [originalClientId], references: [id])
+  originalStaff    Staff?   @relation("OriginalStaff", fields: [originalStaffId], references: [id])
+
   @@index([date, status])
   @@index([createdAt])
 }
 
 model ClientSupervisor {
-  id            Int      @id @default(autoincrement())
-  clientId      Int
-  supervisorName String  // Free text field for supervisor name
-  effectiveDate DateTime @db.Date // When this supervisor assignment takes effect
-  endDate       DateTime? @db.Date // When this supervisor assignment ends (null for current)
-  createdBy     String   @default("system")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+  id             Int       @id @default(autoincrement())
+  clientId       Int
+  supervisorName String
+  effectiveDate  DateTime  @db.Date
+  endDate        DateTime? @db.Date
+  createdBy      String    @default("system")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  client         Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
   @@index([clientId, effectiveDate])
   @@index([supervisorName])
   @@index([effectiveDate])
 }
 
 model ReassignmentNeeded {
-  id               Int      @id @default(autoincrement())
-  clientId         Int
-  originalStaffId  Int?     // Can be null if staff was deleted
-  originalStaffName String  // Store name in case staff is deleted
-  day              String   // Day of week
-  block            String   // AM/PM
-  location         String   // Service location
-  
-  // Tracking info
-  deletedAt        DateTime @default(now())
-  deletedBy        String   // User who deleted the assignment
-  status           String   @default("pending") // "pending", "planned", "reassigned", "dismissed"
-  
-  // Planned assignment info (if exists)
-  plannedStaffId   Int?
-  plannedDate      DateTime? @db.Date
-  
-  // Dismissal info
-  dismissedAt      DateTime?
-  dismissedBy      String?
-  dismissalReason  String?
-  
-  // Relations
-  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  originalStaff    Staff?   @relation("ReassignmentOriginalStaff", fields: [originalStaffId], references: [id], onDelete: SetNull)
-  plannedStaff     Staff?   @relation("ReassignmentPlannedStaff", fields: [plannedStaffId], references: [id], onDelete: SetNull)
-  
+  id                Int       @id @default(autoincrement())
+  clientId          Int
+  originalStaffId   Int?
+  originalStaffName String
+  day               String
+  block             String
+  location          String
+  deletedAt         DateTime  @default(now())
+  deletedBy         String
+  status            String    @default("pending")
+  plannedStaffId    Int?
+  plannedDate       DateTime? @db.Date
+  dismissedAt       DateTime?
+  dismissedBy       String?
+  dismissalReason   String?
+  client            Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  originalStaff     Staff?    @relation("ReassignmentOriginalStaff", fields: [originalStaffId], references: [id])
+  plannedStaff      Staff?    @relation("ReassignmentPlannedStaff", fields: [plannedStaffId], references: [id])
+
   @@index([status, location])
   @@index([status, day, block])
   @@index([clientId])
@@ -274,138 +230,143 @@ model ReassignmentNeeded {
 }
 
 model LunchSchedule {
-  id         Int      @id @default(autoincrement())
-  date       DateTime @db.Date
-  location   String   // Filter by location
-  
-  // Finalization tracking
-  isFinalized                 Boolean  @default(false)
-  finalizedBy                 String?
-  finalizedAt                 DateTime?
-  
-  // Post-finalization modification tracking
-  modifiedAfterFinalization   Boolean  @default(false)
-  lastModifiedBy              String?
-  lastModifiedAt              DateTime?
-  
-  // Manual client override tracking
-  manuallyMovedToAvailable    Int[]    @default([]) // Client IDs manually moved to available (override auto-detection)
-  manualStayWithStaff         Int[]    @default([]) // Client IDs manually set to stay with staff
-  excludedClients             Int[]    @default([]) // Client IDs excluded from lunch entirely
-  
-  // Relations
-  timeBlocks LunchTimeBlock[]
-  
-  // Metadata
-  createdBy  String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
-  @@unique([date, location]) // One lunch schedule per date/location
-  @@index([date])
-  @@index([location])
-  @@index([isFinalized])
+  id                        Int              @id @default(autoincrement())
+  date                      DateTime         @db.Date
+  location                  String           @db.VarChar(100)
+  isFinalized               Boolean          @default(false)
+  finalizedBy               String?          @db.VarChar(100)
+  finalizedAt               DateTime?        @db.Timestamp(6)
+  modifiedAfterFinalization Boolean          @default(false)
+  lastModifiedBy            String?          @db.VarChar(100)
+  lastModifiedAt            DateTime?        @db.Timestamp(6)
+  createdBy                 String           @db.VarChar(100)
+  createdAt                 DateTime         @default(now()) @db.Timestamp(6)
+  updatedAt                 DateTime         @default(now()) @updatedAt @db.Timestamp(6)
+  manuallyMovedToAvailable  Int[]            @default([])
+  manualStayWithStaff       Int[]            @default([])
+  excludedClients           Int[]            @default([])
+  timeBlocks                LunchTimeBlock[]
+
+  @@unique([date, location])
+  @@index([date], map: "idx_lunch_schedule_date")
+  @@index([isFinalized], map: "idx_lunch_schedule_finalized")
+  @@index([location], map: "idx_lunch_schedule_location")
 }
 
 model LunchTimeBlock {
-  id              Int    @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   lunchScheduleId Int
-  startTime       String // "12:30"
-  endTime         String // "13:00" 
-  label           String? // "Early Lunch", "Late Lunch"
-  
-  // Relations
-  lunchSchedule   LunchSchedule @relation(fields: [lunchScheduleId], references: [id], onDelete: Cascade)
+  startTime       String        @db.VarChar(10)
+  endTime         String        @db.VarChar(10)
+  label           String?       @db.VarChar(50)
+  createdAt       DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime      @default(now()) @updatedAt @db.Timestamp(6)
   groups          LunchGroup[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@index([lunchScheduleId])
+  lunchSchedule   LunchSchedule @relation(fields: [lunchScheduleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([lunchScheduleId], map: "idx_lunch_time_block_schedule")
 }
 
 model LunchGroup {
-  id           Int    @id @default(autoincrement())
+  id           Int                @id @default(autoincrement())
   timeBlockId  Int
-  
-  // Staff assignments
-  primaryStaff String // Can be staff name or ID
-  helpers      String[] @default([]) // Array of helper names
-  
-  // Location and identification
-  roomLocation String? // "Play Gym", "Cafeteria"
-  groupName    String? // "Group 1", "Blue Group"
-  color        String  @default("#3B82F6") // Group color for UI
-  
-  // Group-specific times
-  startTime    String? // "12:30" - individual group start time
-  endTime      String? // "13:00" - individual group end time
-  
-  // Relations
-  timeBlock    LunchTimeBlock @relation(fields: [timeBlockId], references: [id], onDelete: Cascade)
+  primaryStaff String             @db.VarChar(100)
+  helpers      String[]           @default([])
+  roomLocation String?            @db.VarChar(100)
+  groupName    String?            @db.VarChar(50)
+  color        String?            @default("#3B82F6") @db.VarChar(20)
+  createdAt    DateTime           @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime           @default(now()) @updatedAt @db.Timestamp(6)
+  startTime    String?
+  endTime      String?
+  timeBlock    LunchTimeBlock     @relation(fields: [timeBlockId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   clients      LunchGroupClient[]
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  @@index([timeBlockId])
+
+  @@index([timeBlockId], map: "idx_lunch_group_time_block")
 }
 
 model LunchGroupClient {
-  id                   Int     @id @default(autoincrement())
+  id                   Int        @id @default(autoincrement())
   lunchGroupId         Int
   clientId             Int
-  
-  // Afternoon session status
-  hasAfternoonSession  Boolean @default(false)
-  afternoonSessionNote String? // Optional note about PM session
-  
-  // Order in group for display
-  displayOrder         Int     @default(0)
-  
-  // Relations
-  lunchGroup           LunchGroup @relation(fields: [lunchGroupId], references: [id], onDelete: Cascade)
-  client               Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
-  createdAt            DateTime @default(now())
-  
-  @@unique([lunchGroupId, clientId]) // Prevent duplicate client assignments
-  @@index([lunchGroupId])
-  @@index([clientId])
+  hasAfternoonSession  Boolean    @default(false)
+  afternoonSessionNote String?    @db.VarChar(200)
+  displayOrder         Int?       @default(0)
+  createdAt            DateTime   @default(now()) @db.Timestamp(6)
+  client               Client     @relation(fields: [clientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  lunchGroup           LunchGroup @relation(fields: [lunchGroupId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([lunchGroupId, clientId])
+  @@index([clientId], map: "idx_lunch_group_client_client")
+  @@index([lunchGroupId], map: "idx_lunch_group_client_group")
 }
 
 model ScheduleGroup {
-  id          Int      @id @default(autoincrement())
-  name        String   // Group name
-  timeBlock   String   // "AM" or "PM"
-  date        DateTime @db.Date // Date this group applies to
-  staffId     Int      // Staff member running the group
-  location    String   // Group location
-  maxClients  Int      @default(6) // Maximum clients in group
-  createdBy   String   @default("user")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relations
-  members     ScheduleGroupMember[]
-  
+  id         Int                   @id @default(autoincrement())
+  name       String
+  timeBlock  String
+  date       DateTime              @db.Date
+  staffId    Int
+  location   String
+  maxClients Int                   @default(6)
+  createdBy  String                @default("user")
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  members    ScheduleGroupMember[]
+
   @@index([date, timeBlock])
   @@index([staffId])
   @@index([date, location])
 }
 
 model ScheduleGroupMember {
-  id                Int      @id @default(autoincrement())
+  id                Int           @id @default(autoincrement())
   groupId           Int
   clientId          Int
-  originalStaffId   Int?     // Staff client was originally assigned to
-  originalSessionId Int?     // Original session ID if applicable
-  createdAt         DateTime @default(now())
-  
-  // Relations
+  originalStaffId   Int?
+  originalSessionId Int?
+  createdAt         DateTime      @default(now())
   group             ScheduleGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  
-  @@unique([groupId, clientId]) // Prevent duplicate client assignments
+
+  @@unique([groupId, clientId])
   @@index([groupId])
   @@index([clientId])
+}
+
+model DailyScheduleState {
+  id             Int      @id @default(autoincrement())
+  date           DateTime @unique @db.Date
+  staffPositions Json
+  sessions       Json
+  clientStates   Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+  auditLog       Json     @default("[]")
+}
+
+model DailyAssignmentState {
+  id              Int        @id @default(autoincrement())
+  date            DateTime   @db.Date
+  assignmentId    Int
+  currentStaffId  Int?
+  
+  assignment      Assignment @relation(fields: [assignmentId], references: [id])
+  currentStaff    Staff?     @relation(fields: [currentStaffId], references: [id])
+  
+  @@unique([date, assignmentId])
+  @@index([date])
+}
+
+model SessionReview {
+  id                   Int      @id @default(autoincrement())
+  date                 DateTime @db.Date
+  sessionId            String
+  reviewedAt           DateTime
+  reviewedBy           String
+  sessionStateAtReview Json
+  createdAt            DateTime @default(now())
+
+  @@unique([date, sessionId])
+  @@index([date])
+  @@index([reviewedAt])
 }

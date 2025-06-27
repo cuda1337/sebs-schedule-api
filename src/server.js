@@ -1319,6 +1319,10 @@ if (dailyOverrideRoutes) {
   app.use('/api', dailyOverrideRoutes);
 }
 
+// Daily Schedule State routes
+const dailyScheduleStateRoutes = require('./routes/dailyScheduleState.routes');
+app.use('/api/daily-schedule-state', dailyScheduleStateRoutes);
+
 // Start server
 const startServer = async () => {
   try {
