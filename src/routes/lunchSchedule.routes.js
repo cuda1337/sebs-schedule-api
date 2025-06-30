@@ -354,12 +354,19 @@ router.get('/available-clients', async (req, res) => {
     const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
     console.log(`📋 Day of week: ${dayOfWeek}`);
     
+    // Get the active main version (same as daily schedule)
+    const mainVersion = await prisma.scheduleVersion.findFirst({
+      where: { type: 'main', status: 'active' }
+    });
+    const activeVersionId = mainVersion?.id || 1;
+    console.log(`📋 Using active version: ${activeVersionId}`);
+    
     // Find clients who have AM assignments on this day at this location
     const amAssignments = await prisma.assignment.findMany({
       where: {
         day: dayOfWeek,
-        block: 'AM'
-        // Remove versionId filter to include all assignment versions
+        block: 'AM',
+        versionId: activeVersionId // Only show assignments from active version
       },
       include: {
         client: true,
@@ -453,7 +460,7 @@ router.get('/available-clients', async (req, res) => {
       where: {
         day: dayOfWeek,
         block: 'PM',
-        // Remove versionId filter to include all PM assignments
+        versionId: activeVersionId, // Use same version as AM assignments
         clientId: {
           in: Array.from(effectiveAssignments.keys())
         }
@@ -499,7 +506,8 @@ router.get('/available-clients', async (req, res) => {
       const anyDayAssignments = await prisma.assignment.findMany({
         where: {
           day: dayOfWeek,
-          block: 'AM'
+          block: 'AM',
+          versionId: activeVersionId // Only check active version
         },
         include: {
           client: true
