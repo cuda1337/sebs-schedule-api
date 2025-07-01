@@ -76,6 +76,93 @@ router.put('/', async (req, res) => {
   }
 });
 
+// PUT /api/daily-schedule-state/swap
+// Atomic swap endpoint - swap staff between two assignments
+router.put('/swap', async (req, res) => {
+  try {
+    const { date, swap1, swap2 } = req.body;
+    
+    if (!date || !swap1 || !swap2) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: date, swap1, and swap2' 
+      });
+    }
+    
+    // Use a transaction to ensure both updates happen atomically
+    const result = await prisma.$transaction(async (tx) => {
+      // Update first assignment
+      const state1 = await tx.dailyAssignmentState.upsert({
+        where: {
+          date_assignmentId: {
+            date: new Date(date),
+            assignmentId: parseInt(swap1.assignmentId)
+          }
+        },
+        update: {
+          currentStaffId: swap1.staffId ? parseInt(swap1.staffId) : null
+        },
+        create: {
+          date: new Date(date),
+          assignmentId: parseInt(swap1.assignmentId),
+          currentStaffId: swap1.staffId ? parseInt(swap1.staffId) : null
+        },
+        include: {
+          currentStaff: true,
+          assignment: {
+            include: {
+              staff: true,
+              client: true
+            }
+          }
+        }
+      });
+      
+      // Update second assignment
+      const state2 = await tx.dailyAssignmentState.upsert({
+        where: {
+          date_assignmentId: {
+            date: new Date(date),
+            assignmentId: parseInt(swap2.assignmentId)
+          }
+        },
+        update: {
+          currentStaffId: swap2.staffId ? parseInt(swap2.staffId) : null
+        },
+        create: {
+          date: new Date(date),
+          assignmentId: parseInt(swap2.assignmentId),
+          currentStaffId: swap2.staffId ? parseInt(swap2.staffId) : null
+        },
+        include: {
+          currentStaff: true,
+          assignment: {
+            include: {
+              staff: true,
+              client: true
+            }
+          }
+        }
+      });
+      
+      return [state1, state2];
+    });
+    
+    // Log the swap for debugging
+    console.log(`[DailyScheduleState] Atomic swap completed for date ${date}:`, {
+      swap1: { assignmentId: swap1.assignmentId, staffId: swap1.staffId },
+      swap2: { assignmentId: swap2.assignmentId, staffId: swap2.staffId }
+    });
+    
+    res.json(result);
+  } catch (error) {
+    console.error('[DailyScheduleState] Swap error:', error);
+    res.status(500).json({ 
+      error: 'Failed to swap staff assignments',
+      details: error.message 
+    });
+  }
+});
+
 // DELETE /api/daily-schedule-state/:date
 // Used for "Reset Schedule" functionality
 router.delete('/:date', async (req, res) => {
