@@ -921,9 +921,18 @@ app.delete('/api/assignments/:id', async (req, res) => {
     const { id } = req.params;
     const { needsReassignment } = req.query;
     
+    // Validate assignment ID
+    const numericId = parseInt(id);
+    if (isNaN(numericId)) {
+      console.error('Invalid assignment ID received:', id);
+      return res.status(400).json({ error: 'Invalid assignment ID' });
+    }
+    
+    console.log('Deleting assignment:', { id: numericId, needsReassignment, user: req.user?.name });
+    
     // Get assignment before deleting for change log
     const assignmentToDelete = await prisma.assignment.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: numericId },
       include: {
         staff: true,
         client: true,
@@ -936,7 +945,7 @@ app.delete('/api/assignments/:id', async (req, res) => {
     }
     
     await prisma.assignment.delete({
-      where: { id: parseInt(id) }
+      where: { id: numericId }
     });
     
     // Create change log entry for main schedule changes
@@ -959,6 +968,8 @@ app.delete('/api/assignments/:id', async (req, res) => {
       
       // Only create reassignment need if no other assignment exists for this client/time
       if (!existingAssignment) {
+        console.log('Creating reassignment record for client:', assignmentToDelete.clientId, 'on', assignmentToDelete.day, assignmentToDelete.block);
+        
         await prisma.reassignmentNeeded.create({
           data: {
             clientId: assignmentToDelete.clientId,
@@ -966,17 +977,25 @@ app.delete('/api/assignments/:id', async (req, res) => {
             originalStaffName: assignmentToDelete.staff.name,
             day: assignmentToDelete.day,
             block: assignmentToDelete.block,
-            location: assignmentToDelete.client.locations[0] || 'Unknown',
+            location: assignmentToDelete.location || (assignmentToDelete.client.locations && assignmentToDelete.client.locations.length > 0 ? assignmentToDelete.client.locations[0] : 'Unknown'),
             deletedBy: req.user?.name || 'system'
           }
         });
+        
+        console.log('Reassignment record created successfully');
       }
     }
     
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting assignment:', error);
-    res.status(500).json({ error: 'Failed to delete assignment' });
+    console.error('Error details:', {
+      assignmentId: req.params.id,
+      needsReassignment: req.query.needsReassignment,
+      errorMessage: error.message,
+      errorStack: error.stack
+    });
+    res.status(500).json({ error: 'Failed to delete assignment', details: error.message });
   }
 });
 
