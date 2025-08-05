@@ -144,10 +144,20 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
     
     console.log('Fetching available clients for:', { location, dayOfWeek });
     
-    // Get all AM assignments for this location and day
+    // Step 1: Get all clients who have this location in their profile
+    const clientsAtLocation = await prisma.client.findMany({
+      where: {
+        locations: {
+          has: location
+        }
+      }
+    });
+    
+    console.log(`Found ${clientsAtLocation.length} clients registered for ${location}`);
+    
+    // Step 2: Get all AM assignments for this day (regardless of location)
     const assignments = await prisma.assignment.findMany({
       where: {
-        location,
         day: dayOfWeek,
         block: 'AM',
         versionId: 1 // Main schedule
@@ -158,25 +168,35 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
       }
     });
     
-    console.log(`Found ${assignments.length} AM assignments for ${location} on ${dayOfWeek}`);
+    console.log(`Found ${assignments.length} total AM assignments on ${dayOfWeek}`);
     
-    // Extract unique clients
-    const clientsMap = new Map();
+    // Step 3: Create a set of client IDs who have AM assignments on this day
+    const clientsWithAMAssignments = new Set();
+    const clientStaffMap = new Map();
+    
     assignments.forEach(assignment => {
-      if (assignment.client && !clientsMap.has(assignment.client.id)) {
-        clientsMap.set(assignment.client.id, {
-          ...assignment.client,
-          assignedStaff: assignment.staff
-        });
+      if (assignment.client) {
+        clientsWithAMAssignments.add(assignment.client.id);
+        // Store the staff assignment for this client
+        if (!clientStaffMap.has(assignment.client.id)) {
+          clientStaffMap.set(assignment.client.id, assignment.staff);
+        }
       }
     });
     
-    const clients = Array.from(clientsMap.values());
+    // Step 4: Filter location clients to only those with AM assignments
+    const availableClients = clientsAtLocation
+      .filter(client => clientsWithAMAssignments.has(client.id))
+      .map(client => ({
+        ...client,
+        assignedStaff: clientStaffMap.get(client.id) || null
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
     
-    console.log(`Returning ${clients.length} unique clients`);
+    console.log(`Returning ${availableClients.length} clients who are at ${location} and have AM assignments on ${dayOfWeek}`);
     
     res.json({
-      clients,
+      clients: availableClients,
       totalAssignments: assignments.length
     });
   } catch (error) {
