@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+const express = require('express');
+const { PrismaClient } = require('@prisma/client');
 
-const router = Router();
+const router = express.Router();
 const prisma = new PrismaClient();
 
 // Manual migration endpoint for fixing staff deletion constraints
@@ -54,11 +54,11 @@ router.post('/migrate-staff-deletion-constraints', async (req, res) => {
 
     await prisma.$executeRawUnsafe(`
       ALTER TABLE "ReassignmentNeeded" 
-      DROP CONSTRAINT IF EXISTS "ReassignmentNeeded_plannedReplacementStaffId_fkey";
+      DROP CONSTRAINT IF EXISTS "ReassignmentNeeded_plannedStaffId_fkey";
 
       ALTER TABLE "ReassignmentNeeded" 
-      ADD CONSTRAINT "ReassignmentNeeded_plannedReplacementStaffId_fkey" 
-      FOREIGN KEY ("plannedReplacementStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+      ADD CONSTRAINT "ReassignmentNeeded_plannedStaffId_fkey" 
+      FOREIGN KEY ("plannedStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
     `);
 
     await prisma.$executeRawUnsafe(`
@@ -76,7 +76,7 @@ router.post('/migrate-staff-deletion-constraints', async (req, res) => {
       success: true, 
       message: 'Staff deletion constraints updated successfully. Staff can now be deleted while preserving historical records.' 
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error during staff deletion constraint migration:', error);
     res.status(500).json({ 
       success: false, 
@@ -86,4 +86,4 @@ router.post('/migrate-staff-deletion-constraints', async (req, res) => {
   }
 });
 
-export { router as adminRoutes };
+module.exports = { adminRoutes: router };
