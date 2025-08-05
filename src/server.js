@@ -944,11 +944,7 @@ app.delete('/api/assignments/:id', async (req, res) => {
       return res.status(404).json({ error: 'Assignment not found' });
     }
     
-    await prisma.assignment.delete({
-      where: { id: numericId }
-    });
-    
-    // Create change log entry for main schedule changes
+    // Create change log entry for main schedule changes BEFORE deleting
     await createChangeLogEntry('assignment_removed', assignmentToDelete.versionId, assignmentToDelete);
     
     // If this was from main schedule and needs reassignment, track it
@@ -985,6 +981,11 @@ app.delete('/api/assignments/:id', async (req, res) => {
         console.log('Reassignment record created successfully');
       }
     }
+    
+    // Now delete the assignment after all other operations are complete
+    await prisma.assignment.delete({
+      where: { id: numericId }
+    });
     
     res.status(204).send();
   } catch (error) {
