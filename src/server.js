@@ -982,6 +982,11 @@ app.delete('/api/assignments/:id', async (req, res) => {
       }
     }
     
+    // Delete related DailyAssignmentState records first
+    await prisma.dailyAssignmentState.deleteMany({
+      where: { assignmentId: numericId }
+    });
+    
     // Now delete the assignment after all other operations are complete
     await prisma.assignment.delete({
       where: { id: numericId }
