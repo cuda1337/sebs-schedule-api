@@ -98,6 +98,9 @@ app.use('/api/webhooks', require('./routes/webhook.routes'));
 // Migration routes (BEFORE auth middleware - no authentication required)
 app.use('/api/migrate', require('./routes/migrate.routes'));
 
+// Migration fix routes (BEFORE auth middleware - emergency use)
+app.use('/api/migration-fix', require('./routes/migration-fix.routes'));
+
 // Admin routes (BEFORE auth middleware for emergency fixes)
 app.use('/api/admin', require('./routes/admin.routes').adminRoutes);
 
