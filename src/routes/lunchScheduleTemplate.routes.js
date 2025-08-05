@@ -142,6 +142,8 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
   try {
     const { location, dayOfWeek } = req.params;
     
+    console.log('Fetching available clients for:', { location, dayOfWeek });
+    
     // Get all AM assignments for this location and day
     const assignments = await prisma.assignment.findMany({
       where: {
@@ -156,6 +158,8 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
       }
     });
     
+    console.log(`Found ${assignments.length} AM assignments for ${location} on ${dayOfWeek}`);
+    
     // Extract unique clients
     const clientsMap = new Map();
     assignments.forEach(assignment => {
@@ -168,6 +172,8 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
     });
     
     const clients = Array.from(clientsMap.values());
+    
+    console.log(`Returning ${clients.length} unique clients`);
     
     res.json({
       clients,
