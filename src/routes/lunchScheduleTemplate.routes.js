@@ -142,7 +142,11 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
   try {
     const { location, dayOfWeek } = req.params;
     
+    console.log('=== LUNCH TEMPLATE DEBUG ===');
     console.log('Fetching available clients for:', { location, dayOfWeek });
+    console.log('Raw params:', req.params);
+    console.log('Location type:', typeof location, 'Value:', JSON.stringify(location));
+    console.log('DayOfWeek type:', typeof dayOfWeek, 'Value:', JSON.stringify(dayOfWeek));
     
     // Step 1: Get all clients who have this location in their profile
     const clientsAtLocation = await prisma.client.findMany({
@@ -155,12 +159,38 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
     
     console.log(`Found ${clientsAtLocation.length} clients registered for ${location}`);
     
-    // Step 2: Get all AM assignments for this day (regardless of location)
+    // Debug: Let's see what locations clients actually have
+    if (clientsAtLocation.length === 0) {
+      const allClients = await prisma.client.findMany({
+        take: 5
+      });
+      console.log('Sample of client locations:');
+      allClients.forEach(client => {
+        console.log(`- ${client.name}: ${JSON.stringify(client.locations)}`);
+      });
+    }
+    
+    // Step 2: Get the main schedule version
+    const mainVersion = await prisma.scheduleVersion.findFirst({
+      where: {
+        type: 'main',
+        status: 'active'
+      }
+    });
+    
+    if (!mainVersion) {
+      console.log('No active main schedule version found');
+      return res.json({ clients: [], totalAssignments: 0 });
+    }
+    
+    console.log(`Using main schedule version ID: ${mainVersion.id}`);
+    
+    // Step 3: Get all AM assignments for this day (regardless of location)
     const assignments = await prisma.assignment.findMany({
       where: {
         day: dayOfWeek,
         block: 'AM',
-        versionId: 1 // Main schedule
+        versionId: mainVersion.id // Use actual main schedule version
       },
       include: {
         client: true,
@@ -170,7 +200,24 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
     
     console.log(`Found ${assignments.length} total AM assignments on ${dayOfWeek}`);
     
-    // Step 3: Create a set of client IDs who have AM assignments on this day
+    // Debug assignments
+    if (assignments.length === 0) {
+      // Check what days we have assignments for
+      const sampleAssignments = await prisma.assignment.findMany({
+        where: {
+          block: 'AM',
+          versionId: 1
+        },
+        take: 5,
+        distinct: ['day']
+      });
+      console.log('Sample of assignment days:');
+      sampleAssignments.forEach(a => {
+        console.log(`- Day: ${a.day}`);
+      });
+    }
+    
+    // Step 4: Create a set of client IDs who have AM assignments on this day
     const clientsWithAMAssignments = new Set();
     const clientStaffMap = new Map();
     
@@ -184,7 +231,7 @@ router.get('/:location/:dayOfWeek/available-clients', async (req, res) => {
       }
     });
     
-    // Step 4: Filter location clients to only those with AM assignments
+    // Step 5: Filter location clients to only those with AM assignments
     const availableClients = clientsAtLocation
       .filter(client => clientsWithAMAssignments.has(client.id))
       .map(client => ({
