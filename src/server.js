@@ -104,6 +104,9 @@ app.use('/api/admin', require('./routes/admin.routes').adminRoutes);
 // Simple lunch schedule routes (BEFORE auth middleware for testing)
 app.use('/api/lunch-schedules', require('./routes/lunchSchedule.routes'));
 
+// Lunch template routes (BEFORE auth middleware for testing)
+app.use('/api/lunch-templates', require('./routes/lunchScheduleTemplate.routes'));
+
 // Schedule groups routes (BEFORE auth middleware for testing)  
 app.use('/api/schedule-groups', require('./routes/scheduleGroup.routes'));
 

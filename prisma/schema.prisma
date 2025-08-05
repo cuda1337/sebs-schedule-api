@@ -245,6 +245,7 @@ model LunchSchedule {
   manuallyMovedToAvailable  Int[]            @default([])
   manualStayWithStaff       Int[]            @default([])
   excludedClients           Int[]            @default([])
+  fromTemplateId            Int?             // Track if created from template
   timeBlocks                LunchTimeBlock[]
 
   @@unique([date, location])
@@ -369,4 +370,21 @@ model SessionReview {
   @@unique([date, sessionId])
   @@index([date])
   @@index([reviewedAt])
+}
+
+model LunchScheduleTemplate {
+  id               Int      @id @default(autoincrement())
+  location         String   @db.VarChar(100)
+  dayOfWeek        String   @db.VarChar(20) // Monday, Tuesday, Wednesday, Thursday, Friday
+  groups           Json     @default("[]") // Array of template groups with staffId, helpers, clientIds
+  unassignedClientIds Int[] @default([]) // Client IDs not assigned to any group but available
+  timeStart        String   @default("12:30") @db.VarChar(10)
+  timeEnd          String   @default("1:00") @db.VarChar(10)
+  createdBy        String   @db.VarChar(100)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+  
+  @@unique([location, dayOfWeek])
+  @@index([location])
+  @@index([dayOfWeek])
 }
