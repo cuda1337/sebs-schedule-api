@@ -33,11 +33,11 @@ ADD CONSTRAINT "ReassignmentNeeded_originalStaffId_fkey"
 FOREIGN KEY ("originalStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE "ReassignmentNeeded" 
-DROP CONSTRAINT IF EXISTS "ReassignmentNeeded_plannedReplacementStaffId_fkey";
+DROP CONSTRAINT IF EXISTS "ReassignmentNeeded_plannedStaffId_fkey";
 
 ALTER TABLE "ReassignmentNeeded" 
-ADD CONSTRAINT "ReassignmentNeeded_plannedReplacementStaffId_fkey" 
-FOREIGN KEY ("plannedReplacementStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ADD CONSTRAINT "ReassignmentNeeded_plannedStaffId_fkey" 
+FOREIGN KEY ("plannedStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- DailyAssignmentState table - Set staff reference to NULL when staff is deleted
 ALTER TABLE "DailyAssignmentState" 
