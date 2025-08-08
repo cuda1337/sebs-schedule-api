@@ -469,14 +469,49 @@ router.get('/available-clients', async (req, res) => {
 
     const clientsWithPM = new Set(pmAssignments.map(a => a.clientId));
 
-    // Build final available clients list
-    const availableClients = Array.from(effectiveAssignments.values()).map(assignment => ({
-      id: assignment.clientId,
-      name: assignment.client.name,
-      locations: assignment.client.locations || [],
-      hasAfternoonSession: clientsWithPM.has(assignment.clientId),
-      staff: assignment.staff ? [assignment.staff.name] : []
-    }));
+    // Check if there's an existing lunch schedule for this date/location
+    const existingLunchSchedule = await prisma.lunchSchedule.findUnique({
+      where: {
+        date_location: {
+          date: new Date(date),
+          location: location
+        }
+      },
+      include: {
+        timeBlocks: {
+          include: {
+            groups: {
+              include: {
+                clients: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Get client IDs already assigned to lunch groups
+    const clientsInLunchGroups = new Set();
+    if (existingLunchSchedule) {
+      existingLunchSchedule.timeBlocks.forEach(timeBlock => {
+        timeBlock.groups.forEach(group => {
+          group.clients.forEach(client => {
+            clientsInLunchGroups.add(client.clientId);
+          });
+        });
+      });
+    }
+
+    // Build final available clients list, excluding those already in lunch groups
+    const availableClients = Array.from(effectiveAssignments.values())
+      .filter(assignment => !clientsInLunchGroups.has(assignment.clientId))
+      .map(assignment => ({
+        id: assignment.clientId,
+        name: assignment.client.name,
+        locations: assignment.client.locations || [],
+        hasAfternoonSession: clientsWithPM.has(assignment.clientId),
+        staff: assignment.staff ? [assignment.staff.name] : []
+      }));
 
     const result = {
       availableClients: availableClients,
@@ -497,6 +532,7 @@ router.get('/available-clients', async (req, res) => {
     console.log(`   - AM assignments found: ${amAssignments.length}`);
     console.log(`   - Daily overrides: ${dailyOverrides.length}`);
     console.log(`   - Effective assignments: ${effectiveAssignments.size}`);
+    console.log(`   - Clients already in lunch groups: ${clientsInLunchGroups.size}`);
     
     // If no clients found, provide helpful debug info
     if (result.availableClients.length === 0) {
