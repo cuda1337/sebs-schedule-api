@@ -455,6 +455,59 @@ router.get('/available-clients', async (req, res) => {
       }
     });
 
+    // Add one-time AM sessions to available clients
+    const oneTimeOverrides = await prisma.dailyOverride.findMany({
+      where: {
+        date: targetDate,
+        day: dayOfWeek,
+        block: 'AM',
+        type: 'add_session',
+        status: 'active'
+      }
+    });
+
+    console.log(`📋 Found ${oneTimeOverrides.length} one-time AM sessions`);
+
+    // Add one-time sessions to effective assignments
+    oneTimeOverrides.forEach(override => {
+      try {
+        // Parse the reason field which contains session data
+        const reasonText = override.reason.replace('One-time session: ', '');
+        const sessionData = JSON.parse(reasonText);
+
+        // Check if this one-time session is at the target location
+        if (sessionData.location && sessionData.location !== location) {
+          console.log(`⏭️ Skipping one-time session ${override.id} - wrong location (${sessionData.location} vs ${location})`);
+          return; // Skip if wrong location
+        }
+
+        // Create a pseudo-client for lunch scheduling
+        const oneTimeClientId = -override.id; // Use negative ID to avoid conflicts
+        const staffInfo = sessionData.staffSlots && sessionData.staffSlots.length > 0
+          ? {
+              id: sessionData.staffSlots[0].staffId,
+              name: sessionData.staffSlots[0].staffName
+            }
+          : null;
+
+        effectiveAssignments.set(oneTimeClientId, {
+          clientId: oneTimeClientId,
+          client: {
+            id: oneTimeClientId,
+            name: sessionData.clientName || 'Unknown',
+            locations: [sessionData.location || location]
+          },
+          staff: staffInfo,
+          isActive: true,
+          isOneTime: true // Flag to identify one-time clients
+        });
+
+        console.log(`✅ Added one-time session: ${sessionData.clientName} (ID: ${oneTimeClientId})`);
+      } catch (error) {
+        console.error(`❌ Error parsing one-time session ${override.id}:`, error.message);
+      }
+    });
+
     // Check for PM assignments to determine hasAfternoonSession
     const pmAssignments = await prisma.assignment.findMany({
       where: {
