@@ -309,69 +309,79 @@ function parseClientCancellation(message, allClients) {
   
   console.log(`📋 Found ${foundClients.length} client(s):`, foundClients.map(c => c.name).join(', '));
 
-  // Try to extract date - look for "today", "tomorrow", specific dates
+  // Try to extract date(s) - look for "today", "tomorrow", specific dates
   // Use Eastern timezone for date calculations
   const now = new Date();
   const easternTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-  
+
   const today = new Date(easternTime.getFullYear(), easternTime.getMonth(), easternTime.getDate());
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  
-  let targetDate = today; // Default to today
-  let dayOfWeek = getDayOfWeek(today);
-  
+
+  let targetDates = []; // Changed to array to support multiple dates
+
   if (lowerMessage.includes('tomorrow')) {
-    targetDate = tomorrow;
-    dayOfWeek = getDayOfWeek(tomorrow);
+    targetDates = [tomorrow];
   } else if (lowerMessage.includes('today')) {
-    targetDate = today;
-    dayOfWeek = getDayOfWeek(today);
+    targetDates = [today];
   } else {
-    // Try to parse specific dates
-    const dateMatches = [
+    // Try to parse ALL specific dates in the message
+    const datePatterns = [
       // "June 5th", "June 5"
-      /(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?/i,
+      { regex: /(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?/gi, type: 'monthName' },
       // "6/5", "06/05"
-      /(\d{1,2})\/(\d{1,2})/,
+      { regex: /(\d{1,2})\/(\d{1,2})/g, type: 'numeric' },
       // "6-5", "06-05"
-      /(\d{1,2})-(\d{1,2})/
+      { regex: /(\d{1,2})-(\d{1,2})/g, type: 'numeric' }
     ];
-    
-    let specificDate = null;
+
+    const foundDates = [];
     const currentYear = easternTime.getFullYear();
-    const currentMonth = easternTime.getMonth();
-    
-    for (const pattern of dateMatches) {
-      const match = message.match(pattern);
-      if (match) {
-        if (pattern.source.includes('january|february')) {
+
+    for (const patternInfo of datePatterns) {
+      const matches = [...message.matchAll(patternInfo.regex)];
+
+      for (const match of matches) {
+        let parsedDate = null;
+
+        if (patternInfo.type === 'monthName') {
           // Month name pattern - extract month and day
-          const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 
+          const monthNames = ['january', 'february', 'march', 'april', 'may', 'june',
                              'july', 'august', 'september', 'october', 'november', 'december'];
           const monthName = match[0].split(' ')[0].toLowerCase();
           const monthIndex = monthNames.indexOf(monthName);
           const day = parseInt(match[1]);
-          
+
           if (monthIndex !== -1 && day >= 1 && day <= 31) {
-            specificDate = new Date(currentYear, monthIndex, day);
+            parsedDate = new Date(currentYear, monthIndex, day);
           }
         } else {
           // Numeric pattern - assume MM/DD or MM-DD
           const month = parseInt(match[1]) - 1; // Convert to 0-based
           const day = parseInt(match[2]);
-          
+
           if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
-            specificDate = new Date(currentYear, month, day);
+            parsedDate = new Date(currentYear, month, day);
           }
         }
-        break;
+
+        // Only include dates that are today or in the future
+        if (parsedDate && parsedDate >= today) {
+          // Check for duplicates before adding
+          const isDuplicate = foundDates.some(d => d.getTime() === parsedDate.getTime());
+          if (!isDuplicate) {
+            foundDates.push(parsedDate);
+          }
+        }
       }
     }
-    
-    if (specificDate && specificDate >= today) {
-      targetDate = specificDate;
-      dayOfWeek = getDayOfWeek(specificDate);
+
+    if (foundDates.length > 0) {
+      targetDates = foundDates;
+      console.log(`📅 Found ${foundDates.length} date(s):`, foundDates.map(d => d.toDateString()).join(', '));
+    } else {
+      // Default to today if no dates found
+      targetDates = [today];
     }
   }
 
@@ -390,18 +400,21 @@ function parseClientCancellation(message, allClients) {
     console.log('⚠️ No specific time mentioned, defaulting to both AM and PM');
   }
 
-  // Return array of cancellation info for each client and time block combination
+  // Return array of cancellation info for each DATE, each CLIENT, and each TIME BLOCK combination
   const cancellations = [];
-  for (const client of foundClients) {
-    for (const block of blocks) {
-      cancellations.push({
-        clientName: client.name,
-        clientId: client.id,
-        date: targetDate,
-        day: dayOfWeek,
-        block,
-        originalMessage: message
-      });
+  for (const targetDate of targetDates) {
+    const dayOfWeek = getDayOfWeek(targetDate);
+    for (const client of foundClients) {
+      for (const block of blocks) {
+        cancellations.push({
+          clientName: client.name,
+          clientId: client.id,
+          date: targetDate,
+          day: dayOfWeek,
+          block,
+          originalMessage: message
+        });
+      }
     }
   }
 
