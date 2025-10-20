@@ -122,34 +122,59 @@ export const clientController = {
   async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      
+      const clientId = parseInt(id);
+
       const client = await prisma.client.findUnique({
-        where: { id: parseInt(id) }
+        where: { id: clientId },
+        include: {
+          assignments: true,
+          groupSessionClients: true,
+          lunchGroupClients: true,
+          supervisorHistory: true,
+          reassignmentsNeeded: true
+        }
       });
-      
+
       if (!client) {
         return res.status(404).json({ error: 'Client not found' });
       }
-      
-      await prisma.client.delete({
-        where: { id: parseInt(id) }
+
+      console.log(`Deleting client ${clientId} with:`, {
+        assignments: client.assignments.length,
+        groupSessions: client.groupSessionClients.length,
+        lunchGroups: client.lunchGroupClients.length,
+        supervisorHistory: client.supervisorHistory.length,
+        reassignments: client.reassignmentsNeeded.length
       });
-      
+
+      // Delete client - cascades should handle related records
+      await prisma.client.delete({
+        where: { id: clientId }
+      });
+
+      console.log(`Successfully deleted client ${clientId}`);
+
       // Log the change
       await prisma.changeLog.create({
         data: {
           userId: 'system',
           action: 'DELETE',
           entityType: 'Client',
-          entityId: parseInt(id),
+          entityId: clientId,
           oldValue: client
         }
       });
-      
+
       res.status(204).send();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting client:', error);
-      res.status(500).json({ error: 'Failed to delete client' });
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      res.status(500).json({
+        error: 'Failed to delete client',
+        details: error.message,
+        code: error.code
+      });
     }
   }
 };
