@@ -526,13 +526,41 @@ app.put('/api/staff/:id', async (req, res) => {
 app.delete('/api/staff/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.staff.delete({
-      where: { id: parseInt(id) }
+    const staffId = parseInt(id);
+
+    // Get staff with all relations to see what's blocking deletion
+    const staff = await prisma.staff.findUnique({
+      where: { id: staffId },
+      include: {
+        assignments: true,
+        dailyAssignmentStates: true
+      }
     });
+
+    if (!staff) {
+      return res.status(404).json({ error: 'Staff not found' });
+    }
+
+    console.log(`[DELETE STAFF] Attempting to delete staff ${staffId} (${staff.name}) with:`, {
+      assignments: staff.assignments.length,
+      dailyStates: staff.dailyAssignmentStates.length
+    });
+
+    await prisma.staff.delete({
+      where: { id: staffId }
+    });
+
+    console.log(`[DELETE STAFF] Successfully deleted staff ${staffId}`);
     res.status(204).send();
   } catch (error) {
-    console.error('Error deleting staff:', error);
-    res.status(500).json({ error: 'Failed to delete staff member' });
+    console.error('[DELETE STAFF] Error deleting staff:', error);
+    console.error('[DELETE STAFF] Error code:', error.code);
+    console.error('[DELETE STAFF] Error message:', error.message);
+    res.status(500).json({
+      error: 'Failed to delete staff member',
+      details: error.message,
+      code: error.code
+    });
   }
 });
 
