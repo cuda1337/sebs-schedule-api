@@ -546,6 +546,16 @@ app.delete('/api/staff/:id', async (req, res) => {
       dailyStates: staff.dailyAssignmentStates.length
     });
 
+    // Delete DailyAssignmentState records first (they don't have cascade delete on assignmentId)
+    const assignmentIds = staff.assignments.map(a => a.id);
+    if (assignmentIds.length > 0) {
+      const deletedStates = await prisma.dailyAssignmentState.deleteMany({
+        where: { assignmentId: { in: assignmentIds } }
+      });
+      console.log(`[DELETE STAFF] Deleted ${deletedStates.count} DailyAssignmentState records`);
+    }
+
+    // Now delete the staff (assignments will cascade)
     await prisma.staff.delete({
       where: { id: staffId }
     });
