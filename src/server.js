@@ -398,6 +398,16 @@ app.delete('/api/clients/:id', async (req, res) => {
       reassignments: client.reassignmentsNeeded.length
     });
 
+    // Delete DailyAssignmentState records first (they don't have cascade delete)
+    const assignmentIds = client.assignments.map(a => a.id);
+    if (assignmentIds.length > 0) {
+      const deletedStates = await prisma.dailyAssignmentState.deleteMany({
+        where: { assignmentId: { in: assignmentIds } }
+      });
+      console.log(`[DELETE CLIENT] Deleted ${deletedStates.count} DailyAssignmentState records`);
+    }
+
+    // Now delete the client (assignments will cascade)
     await prisma.client.delete({
       where: { id: clientId }
     });
