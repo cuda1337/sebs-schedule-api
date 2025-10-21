@@ -372,13 +372,47 @@ app.put('/api/clients/:id', async (req, res) => {
 app.delete('/api/clients/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.client.delete({
-      where: { id: parseInt(id) }
+    const clientId = parseInt(id);
+
+    // Get client with all relations to see what's blocking deletion
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      include: {
+        assignments: true,
+        groupSessionClients: true,
+        lunchGroupClients: true,
+        supervisorHistory: true,
+        reassignmentsNeeded: true
+      }
     });
+
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+
+    console.log(`[DELETE CLIENT] Attempting to delete client ${clientId} (${client.name}) with:`, {
+      assignments: client.assignments.length,
+      groupSessions: client.groupSessionClients.length,
+      lunchGroups: client.lunchGroupClients.length,
+      supervisorHistory: client.supervisorHistory.length,
+      reassignments: client.reassignmentsNeeded.length
+    });
+
+    await prisma.client.delete({
+      where: { id: clientId }
+    });
+
+    console.log(`[DELETE CLIENT] Successfully deleted client ${clientId}`);
     res.status(204).send();
   } catch (error) {
-    console.error('Error deleting client:', error);
-    res.status(500).json({ error: 'Failed to delete client' });
+    console.error('[DELETE CLIENT] Error deleting client:', error);
+    console.error('[DELETE CLIENT] Error code:', error.code);
+    console.error('[DELETE CLIENT] Error message:', error.message);
+    res.status(500).json({
+      error: 'Failed to delete client',
+      details: error.message,
+      code: error.code
+    });
   }
 });
 
