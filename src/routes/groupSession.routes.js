@@ -274,7 +274,13 @@ router.put('/group-sessions/:id', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error updating group session:', error);
-    res.status(500).json({ error: 'Failed to update group session' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    // Return the actual error message for debugging
+    res.status(500).json({
+      error: 'Failed to update group session',
+      details: error.message
+    });
   }
 });
 
