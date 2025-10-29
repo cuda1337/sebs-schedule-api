@@ -215,11 +215,25 @@ router.put('/group-sessions/:id', async (req, res) => {
       
       // If clientIds provided, update the client list
       if (clientIds) {
+        // First, get all assignment IDs that will be deleted
+        const assignmentsToDelete = await prisma.assignment.findMany({
+          where: { groupSessionId },
+          select: { id: true }
+        });
+        const assignmentIds = assignmentsToDelete.map(a => a.id);
+
+        // Delete related DailyAssignmentState records first to avoid foreign key constraint violation
+        if (assignmentIds.length > 0) {
+          await prisma.dailyAssignmentState.deleteMany({
+            where: { assignmentId: { in: assignmentIds } }
+          });
+        }
+
         // Remove all existing clients
         await prisma.groupSessionClient.deleteMany({
           where: { groupSessionId }
         });
-        
+
         // Delete existing assignments
         await prisma.assignment.deleteMany({
           where: { groupSessionId }
@@ -408,6 +422,23 @@ router.delete('/group-sessions/:id/clients/:clientId', async (req, res) => {
     
     // Remove client from group
     await req.prisma.$transaction(async (prisma) => {
+      // First, get assignment IDs to delete
+      const assignmentsToDelete = await prisma.assignment.findMany({
+        where: {
+          groupSessionId,
+          clientId: clientIdInt
+        },
+        select: { id: true }
+      });
+      const assignmentIds = assignmentsToDelete.map(a => a.id);
+
+      // Delete related DailyAssignmentState records first
+      if (assignmentIds.length > 0) {
+        await prisma.dailyAssignmentState.deleteMany({
+          where: { assignmentId: { in: assignmentIds } }
+        });
+      }
+
       // Remove from group session
       await prisma.groupSessionClient.deleteMany({
         where: {
@@ -415,7 +446,7 @@ router.delete('/group-sessions/:id/clients/:clientId', async (req, res) => {
           clientId: clientIdInt
         }
       });
-      
+
       // Delete assignment
       await prisma.assignment.deleteMany({
         where: {
@@ -447,16 +478,30 @@ router.delete('/group-sessions/:id', async (req, res) => {
     
     // Delete in transaction
     await req.prisma.$transaction(async (prisma) => {
+      // First, get all assignment IDs to delete
+      const assignmentsToDelete = await prisma.assignment.findMany({
+        where: { groupSessionId },
+        select: { id: true }
+      });
+      const assignmentIds = assignmentsToDelete.map(a => a.id);
+
+      // Delete related DailyAssignmentState records first
+      if (assignmentIds.length > 0) {
+        await prisma.dailyAssignmentState.deleteMany({
+          where: { assignmentId: { in: assignmentIds } }
+        });
+      }
+
       // Delete all assignments for this group
       await prisma.assignment.deleteMany({
         where: { groupSessionId }
       });
-      
+
       // Delete all group session clients
       await prisma.groupSessionClient.deleteMany({
         where: { groupSessionId }
       });
-      
+
       // Delete the group session
       await prisma.groupSession.delete({
         where: { id: groupSessionId }

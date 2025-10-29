@@ -424,6 +424,8 @@ router.post('/restore-assignments-only', upload.single('backupFile'), async (req
     });
     
     // Clear existing assignments
+    // First delete DailyAssignmentState to avoid foreign key constraint violation
+    await req.prisma.dailyAssignmentState.deleteMany({});
     await req.prisma.assignment.deleteMany({});
     console.log('Cleared existing assignments');
     
@@ -656,6 +658,8 @@ router.post('/test-assignments', async (req, res) => {
     console.log(`Using main version: ${mainVersion.id} (${mainVersion.name})`);
     
     // Step 3: Clear existing assignments
+    // First delete DailyAssignmentState to avoid foreign key constraint violation
+    await req.prisma.dailyAssignmentState.deleteMany({});
     const deletedCount = await req.prisma.assignment.deleteMany({});
     console.log(`Deleted ${deletedCount.count} existing assignments`);
     

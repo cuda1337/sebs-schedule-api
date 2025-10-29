@@ -32,6 +32,8 @@ router.post('/simple-restore', async (req, res) => {
     console.log(`Using main version: ${mainVersion.id} (${mainVersion.name})`);
     
     // Step 3: Clear existing assignments
+    // First delete DailyAssignmentState to avoid foreign key constraint violation
+    await prisma.dailyAssignmentState.deleteMany({});
     const deletedCount = await prisma.assignment.deleteMany({});
     console.log(`Deleted ${deletedCount.count} existing assignments`);
     

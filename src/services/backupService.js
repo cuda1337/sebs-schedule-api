@@ -283,6 +283,8 @@ class BackupService {
         await tx.dailyOverride.deleteMany();
         await tx.clientSupervisor.deleteMany();
         await tx.groupSessionClient.deleteMany();
+        // Delete DailyAssignmentState before assignments to avoid foreign key constraint violation
+        await tx.dailyAssignmentState.deleteMany();
         await tx.assignment.deleteMany();
         await tx.groupSession.deleteMany();
         await tx.scheduleVersion.deleteMany(); // This should clear ALL versions

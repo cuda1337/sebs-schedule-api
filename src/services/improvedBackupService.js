@@ -65,6 +65,8 @@ class ImprovedBackupService {
         await prisma.dailyOverride.deleteMany();
         await prisma.clientSupervisor.deleteMany();
         await prisma.groupSessionClient.deleteMany();
+        // Delete DailyAssignmentState before assignments to avoid foreign key constraint violation
+        await prisma.dailyAssignmentState.deleteMany();
         await prisma.assignment.deleteMany();
         await prisma.groupSession.deleteMany();
         await prisma.scheduleVersion.deleteMany();
