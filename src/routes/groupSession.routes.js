@@ -515,4 +515,50 @@ router.delete('/group-sessions/:id', async (req, res) => {
   }
 });
 
+// Admin endpoint: Clean up orphaned group sessions (no clients or assignments)
+router.delete('/group-sessions/admin/cleanup-orphaned', async (req, res) => {
+  try {
+    // Find all group sessions
+    const allGroupSessions = await req.prisma.groupSession.findMany({
+      include: {
+        clients: true,
+        assignments: true
+      }
+    });
+
+    // Find orphaned ones (no clients AND no assignments)
+    const orphaned = allGroupSessions.filter(gs =>
+      gs.clients.length === 0 && gs.assignments.length === 0
+    );
+
+    if (orphaned.length === 0) {
+      return res.json({
+        message: 'No orphaned group sessions found',
+        deletedCount: 0
+      });
+    }
+
+    // Delete them
+    const orphanedIds = orphaned.map(gs => gs.id);
+    await req.prisma.groupSession.deleteMany({
+      where: { id: { in: orphanedIds } }
+    });
+
+    res.json({
+      message: `Cleaned up ${orphaned.length} orphaned group session(s)`,
+      deletedCount: orphaned.length,
+      deletedSessions: orphaned.map(gs => ({
+        id: gs.id,
+        day: gs.day,
+        block: gs.block,
+        staffId: gs.staffId,
+        location: gs.location
+      }))
+    });
+  } catch (error) {
+    console.error('Error cleaning up orphaned group sessions:', error);
+    res.status(500).json({ error: 'Failed to clean up orphaned group sessions' });
+  }
+});
+
 module.exports = router;
